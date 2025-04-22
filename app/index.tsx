@@ -1,0 +1,37 @@
+import { Body } from "@/components/animation/Body/Body";
+import { StyleSheet, View } from "react-native";
+
+const Fishes = () => {
+  return (
+    <View style={styles.container}>
+      <Body
+        nodes={[
+          { x: 50, y: 50 },
+          { x: 100, y: 100 },
+        ]}
+        size={{ width: 150, height: 150 }}
+      />
+      <Body
+        nodes={[
+          { x: 50, y: 50 },
+          { x: 100, y: 100 },
+          { x: 150, y: 50 },
+        ]}
+        size={{ width: 200, height: 150 }}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 20,
+    padding: 20,
+    backgroundColor: "blue",
+  },
+});
+
+export default Fishes;
