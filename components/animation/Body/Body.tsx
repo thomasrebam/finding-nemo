@@ -1,11 +1,11 @@
-import { Canvas, Path } from "@shopify/react-native-skia";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { Node } from "./Node";
+
+import { RNSVGNode } from "./RNSVGNode";
 
 type Node = {
   x: number;
@@ -17,21 +17,11 @@ type Props = {
   size?: { width: number; height: number };
 };
 
-const NODE_HIT_AREA = 30; // Size of the touchable area for the first node
-
 export const Body = ({ nodes, size = { width: 200, height: 200 } }: Props) => {
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
   const canvasX = useSharedValue(0);
   const canvasY = useSharedValue(0);
-
-  // Create a path that connects all nodes
-  const path = nodes.reduce((acc, node, index) => {
-    if (index === 0) {
-      return `M ${node.x} ${node.y}`;
-    }
-    return `${acc} L ${node.x} ${node.y}`;
-  }, "");
 
   const canvasGesture = Gesture.Pan()
     .onStart(() => {
@@ -49,36 +39,29 @@ export const Body = ({ nodes, size = { width: 200, height: 200 } }: Props) => {
   }));
 
   return (
-    <GestureDetector gesture={canvasGesture}>
-      <Animated.View style={[styles.container, animatedStyle]}>
-        <Canvas style={[styles.canvas, size]}>
-          <Path
-            path={path}
-            color="black"
-            style="stroke"
-            strokeWidth={4}
-            strokeCap="round"
-            strokeJoin="round"
-          />
-          {nodes.map((node, index) => (
-            <Node
-              key={`${node.x}-${node.y}`}
-              x={node.x}
-              y={node.y}
-              size={index === 0 ? NODE_HIT_AREA : undefined}
-            />
-          ))}
-        </Canvas>
-      </Animated.View>
-    </GestureDetector>
+    <View>
+      <GestureDetector gesture={canvasGesture}>
+        <Animated.View style={[styles.container, animatedStyle]}>
+          <RNSVGNode />
+        </Animated.View>
+      </GestureDetector>
+      {nodes.map((node) => (
+        <View
+          key={`${node.x}-${node.y}`}
+          style={{
+            position: "absolute",
+            transform: [{ translateX: node.x }, { translateY: node.y }],
+          }}
+        >
+          <RNSVGNode />
+        </View>
+      ))}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-  },
-  canvas: {
-    backgroundColor: "red",
   },
 });

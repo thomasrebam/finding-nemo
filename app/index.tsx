@@ -8,13 +8,6 @@ const Fishes = () => {
         nodes={[
           { x: 50, y: 50 },
           { x: 100, y: 100 },
-        ]}
-        size={{ width: 150, height: 150 }}
-      />
-      <Body
-        nodes={[
-          { x: 50, y: 50 },
-          { x: 100, y: 100 },
           { x: 150, y: 50 },
         ]}
         size={{ width: 200, height: 150 }}
