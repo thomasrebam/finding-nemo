@@ -14,28 +14,37 @@ type Node = {
 
 type Props = {
   nodes: Node[];
-  size?: { width: number; height: number };
 };
 
-export const Body = ({ nodes, size = { width: 200, height: 200 } }: Props) => {
+const DISTANCE_BETWEEN_NODES = Math.sqrt(50 ** 2 + 50 ** 2);
+
+export const Body = ({ nodes }: Props) => {
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
-  const canvasX = useSharedValue(0);
-  const canvasY = useSharedValue(0);
+  const firstNodeX = useSharedValue(0);
+  const firstNodeY = useSharedValue(0);
+  const sharedNodes = useSharedValue<Node[]>(nodes);
 
   const canvasGesture = Gesture.Pan()
     .onStart(() => {
-      offsetX.value = canvasX.value;
-      offsetY.value = canvasY.value;
+      offsetX.value = firstNodeX.value;
+      offsetY.value = firstNodeY.value;
     })
     .onUpdate((e) => {
       "worklet";
-      canvasX.value = e.translationX + offsetX.value;
-      canvasY.value = e.translationY + offsetY.value;
+      firstNodeX.value = e.translationX + offsetX.value;
+      firstNodeY.value = e.translationY + offsetY.value;
+      sharedNodes.value = sharedNodes.value.map((node) => ({
+        x: node.x + e.translationX,
+        y: node.y + e.translationY,
+      }));
     });
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: canvasX.value }, { translateY: canvasY.value }],
+    transform: [
+      { translateX: firstNodeX.value },
+      { translateY: firstNodeY.value },
+    ],
   }));
 
   return (
@@ -45,16 +54,11 @@ export const Body = ({ nodes, size = { width: 200, height: 200 } }: Props) => {
           <RNSVGNode />
         </Animated.View>
       </GestureDetector>
-      {nodes.map((node) => (
-        <View
+      {nodes.map((node, index) => (
+        <AnimatedNode
           key={`${node.x}-${node.y}`}
-          style={{
-            position: "absolute",
-            transform: [{ translateX: node.x }, { translateY: node.y }],
-          }}
-        >
-          <RNSVGNode />
-        </View>
+          node={sharedNodes.value[index]}
+        />
       ))}
     </View>
   );
@@ -65,3 +69,21 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
 });
+
+const AnimatedNode = ({ node }: { node: Node }) => {
+  const animatedNode = useAnimatedStyle(() => ({
+    position: "absolute",
+    transform: [{ translateX: node.x }, { translateY: node.y }],
+  }));
+
+  return (
+    <Animated.View style={animatedNode}>
+      <RNSVGNode />
+    </Animated.View>
+  );
+};
+
+// Idée : chaque node gère son propre animated style, et le node suivant.
+// Le node passe sa sharedValue au node suivant.
+// Le node suivant met à jour sa position avec la sharedValue du node précédent.
+// Et ainsi de suite.

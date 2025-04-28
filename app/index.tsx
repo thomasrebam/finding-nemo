@@ -10,7 +10,6 @@ const Fishes = () => {
           { x: 100, y: 100 },
           { x: 150, y: 50 },
         ]}
-        size={{ width: 200, height: 150 }}
       />
     </View>
   );
