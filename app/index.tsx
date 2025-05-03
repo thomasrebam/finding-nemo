@@ -6,9 +6,9 @@ const Fishes = () => {
     <View style={styles.container}>
       <Body
         nodes={[
+          { x: 25, y: 25 },
           { x: 50, y: 50 },
-          { x: 100, y: 100 },
-          { x: 150, y: 50 },
+          { x: 50, y: 75 },
         ]}
       />
     </View>
