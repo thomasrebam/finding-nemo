@@ -86,10 +86,12 @@ const LeadNode = ({ allNodes, x, y }: LeadNodeProps) => {
 
     if (distanceWithCurrentNode !== theoreticalDistanceWithCurrentNode) {
       followerX.value = withSpring(
-        Math.cos(theta) * theoreticalDistanceWithCurrentNode
+        Math.cos(theta) * theoreticalDistanceWithCurrentNode,
+        { duration: 1000 }
       );
       followerY.value = withSpring(
-        Math.sin(theta) * theoreticalDistanceWithCurrentNode
+        Math.sin(theta) * theoreticalDistanceWithCurrentNode,
+        { duration: 1000 }
       );
     }
   });
@@ -106,6 +108,8 @@ const LeadNode = ({ allNodes, x, y }: LeadNodeProps) => {
         y={followerY}
         allNodes={allNodes}
         nodeIndex={1}
+        previousNodeX={x}
+        previousNodeY={y}
       />
     </Animated.View>
   );
@@ -116,12 +120,20 @@ type RecursiveNodeProps = {
   y: SharedValue<number>;
   allNodes: Node[];
   nodeIndex: number;
+  previousNodeX: SharedValue<number>;
+  previousNodeY: SharedValue<number>;
 };
 
-const RecursiveNode = ({ x, y, allNodes, nodeIndex }: RecursiveNodeProps) => {
+const RecursiveNode = ({
+  x,
+  y,
+  allNodes,
+  nodeIndex,
+  previousNodeX,
+  previousNodeY,
+}: RecursiveNodeProps) => {
   // Render current node and recursively render first follower if any
   const nextNode = allNodes[nodeIndex + 1];
-
   if (!nextNode) {
     return <LastNodeStanding x={x} y={y} />;
   }
@@ -133,6 +145,8 @@ const RecursiveNode = ({ x, y, allNodes, nodeIndex }: RecursiveNodeProps) => {
       nodeIndex={nodeIndex}
       x={x}
       y={y}
+      previousNodeX={previousNodeX}
+      previousNodeY={previousNodeY}
     />
   );
 };
@@ -143,7 +157,11 @@ const NonLastRecursiveNode = ({
   x,
   y,
   nextNode,
-}: RecursiveNodeProps & { nextNode: Node }) => {
+  previousNodeX,
+  previousNodeY,
+}: RecursiveNodeProps & {
+  nextNode: Node;
+}) => {
   const animatedStyle = useAnimatedStyle(() => ({
     position: "absolute",
     transform: [{ translateX: x.value }, { translateY: y.value }],
@@ -171,12 +189,38 @@ const NonLastRecursiveNode = ({
     );
     const theta =
       sinusSign * Math.acos(followerX.value / distanceWithCurrentNode);
-    if (distanceWithCurrentNode !== theoreticalDistanceWithCurrentNode) {
+    if (distanceWithCurrentNode - theoreticalDistanceWithCurrentNode > 0.0001) {
       followerX.value = withSpring(
         Math.cos(theta) * theoreticalDistanceWithCurrentNode
       );
       followerY.value = withSpring(
         Math.sin(theta) * theoreticalDistanceWithCurrentNode
+      );
+    } else {
+      const distanceBetweenPreviousAndCurrent = Math.sqrt(
+        (x.value - previousNodeX.value) ** 2 +
+          (y.value - previousNodeY.value) ** 2
+      );
+      const sinusSignBetweenPreviousAndCurrent = Math.sign(
+        Math.asin(
+          (y.value - previousNodeY.value) / distanceBetweenPreviousAndCurrent
+        )
+      );
+      const thetaBetweenPreviousAndCurrent =
+        sinusSignBetweenPreviousAndCurrent *
+        Math.acos(
+          (x.value - previousNodeX.value) / distanceBetweenPreviousAndCurrent
+        );
+
+      followerX.value = withSpring(
+        Math.cos(thetaBetweenPreviousAndCurrent) *
+          theoreticalDistanceWithCurrentNode,
+        { duration: 0 }
+      );
+      followerY.value = withSpring(
+        Math.sin(thetaBetweenPreviousAndCurrent) *
+          theoreticalDistanceWithCurrentNode,
+        { duration: 0 }
       );
     }
   });
@@ -189,6 +233,8 @@ const NonLastRecursiveNode = ({
         y={followerY}
         allNodes={allNodes}
         nodeIndex={nodeIndex + 1}
+        previousNodeX={x}
+        previousNodeY={y}
       />
     </Animated.View>
   );
