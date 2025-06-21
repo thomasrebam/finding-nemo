@@ -8,6 +8,8 @@ export type Animal = {
   spine: AnimalNode[];
 };
 
+const MAX_DISTANCE_BY_INCREMENT = 10;
+
 export const moveAnimalTo = ({
   animal,
   x,
@@ -25,10 +27,12 @@ export const moveAnimalTo = ({
     const currentNode = oldSpine[index];
 
     if (index === 0) {
+      const theta = Math.atan2(y - currentNode.y, x - currentNode.x);
+
       newSpine[index] = {
         size: currentNode.size,
-        x,
-        y,
+        x: Math.cos(theta) * MAX_DISTANCE_BY_INCREMENT + currentNode.x,
+        y: Math.sin(theta) * MAX_DISTANCE_BY_INCREMENT + currentNode.y,
       };
 
       continue;
