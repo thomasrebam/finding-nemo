@@ -1,252 +1,93 @@
 import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  SharedValue,
+  runOnJS,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
 
+import { useEffect, useRef } from "react";
+import { Animal } from "../animation";
+import { PositionService } from "./PositionService";
 import { RNSVGNode } from "./RNSVGNode";
 
-type Node = {
-  x: number;
-  y: number;
-};
-
 type Props = {
-  nodes: Node[];
+  animal: Animal;
 };
 
-export const Body = ({ nodes }: Props) => {
-  // Lead node position (first fish)
-  const leadX = useSharedValue(0);
-  const leadY = useSharedValue(0);
+export const Body = ({ animal }: Props) => {
+  const pointerX = useSharedValue(0);
+  const pointerY = useSharedValue(0);
+
+  const offsetX = useSharedValue(0);
+  const offsetY = useSharedValue(0);
+
+  const animalRef = useRef<Animal>(animal);
+
+  const gesture = Gesture.Pan()
+    .onStart(() => {
+      offsetX.value = pointerX.value;
+      offsetY.value = pointerY.value;
+    })
+    .onUpdate((e) => {
+      "worklet";
+      pointerX.value = e.translationX + offsetX.value;
+      pointerY.value = e.translationY + offsetY.value;
+    })
+    .hitSlop(48);
+
+  const pointerAnimatedStyles = useAnimatedStyle(() => ({
+    position: "absolute",
+    transform: [{ translateX: pointerX.value }, { translateY: pointerY.value }],
+    backgroundColor: "red",
+    opacity: 0.5,
+    width: 48,
+    height: 48,
+    borderRadius: 48,
+    zIndex: 1000,
+  }));
+
+  const updatePositionService = (x: number, y: number) => {
+    const newAnimal = PositionService.setPositions({
+      animal: animalRef.current,
+      goTo: { x, y },
+    });
+
+    animalRef.current = newAnimal;
+  };
+
+  useDerivedValue(() => {
+    runOnJS(updatePositionService)(pointerX.value, pointerY.value);
+  });
 
   return (
     <View style={styles.container}>
-      <LeadNode x={leadX} y={leadY} allNodes={[{ x: 0, y: 0 }, ...nodes]} />
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={pointerAnimatedStyles} />
+      </GestureDetector>
+      {animal.spine.map((node, index) => {
+        return <AnimatedNode key={index} index={index} size={node.size} />;
+      })}
     </View>
   );
 };
 
-type LeadNodeProps = {
-  allNodes: Node[];
-  x: SharedValue<number>;
-  y: SharedValue<number>;
-};
+const AnimatedNode = ({ index, size }: { index: number; size?: number }) => {
+  const x = useSharedValue(0);
+  const y = useSharedValue(0);
 
-const LeadNode = ({ allNodes, x, y }: LeadNodeProps) => {
-  const animatedStyle = useAnimatedStyle(() => ({
-    position: "absolute",
-    transform: [{ translateX: x.value }, { translateY: y.value }],
-  }));
-
-  // For lead node only - handle gesture
-  const offsetX = useSharedValue(0);
-  const offsetY = useSharedValue(0);
-
-  const gesture = Gesture.Pan()
-    .onStart(() => {
-      offsetX.value = x.value;
-      offsetY.value = y.value;
-    })
-    .onUpdate((e) => {
-      "worklet";
-      x.value = e.translationX + offsetX.value;
-      y.value = e.translationY + offsetY.value;
+  useEffect(() => {
+    const removeListener = PositionService.subscribe((positions) => {
+      if (positions[index]) {
+        x.value = withSpring(positions[index].x, { duration: 100 });
+        y.value = withSpring(positions[index].y, { duration: 100 });
+      }
     });
+    return () => removeListener();
+  }, []);
 
-  // We assume to have at least 2 nodes
-  const nextNode = allNodes[1] as Node;
-
-  // If there's a follower, create shared values for its position
-  const followerX = useSharedValue(nextNode.x);
-  const followerY = useSharedValue(nextNode.y);
-
-  useDerivedValue(() => {
-    const currentNode = allNodes[0];
-    const theoreticalDistanceWithCurrentNode = Math.sqrt(
-      (currentNode.x - nextNode.x) ** 2 + (currentNode.y - nextNode.y) ** 2
-    );
-    const distanceWithCurrentNode = Math.sqrt(
-      (followerX.value - x.value) ** 2 + (followerY.value - y.value) ** 2
-    );
-
-    if (distanceWithCurrentNode === 0) {
-      return;
-    }
-    const sinusSign = Math.sign(
-      Math.asin((followerY.value - y.value) / distanceWithCurrentNode)
-    );
-    const theta =
-      sinusSign *
-      Math.acos((followerX.value - x.value) / distanceWithCurrentNode);
-
-    if (distanceWithCurrentNode !== theoreticalDistanceWithCurrentNode) {
-      followerX.value = withSpring(
-        Math.cos(theta) * theoreticalDistanceWithCurrentNode,
-        { duration: 1000 }
-      );
-      followerY.value = withSpring(
-        Math.sin(theta) * theoreticalDistanceWithCurrentNode,
-        { duration: 1000 }
-      );
-    }
-  });
-
-  return (
-    <Animated.View style={animatedStyle}>
-      <GestureDetector gesture={gesture}>
-        <View style={{ zIndex: 100 }}>
-          <RNSVGNode />
-        </View>
-      </GestureDetector>
-      <RecursiveNode
-        x={followerX}
-        y={followerY}
-        allNodes={allNodes}
-        nodeIndex={1}
-        previousNodeX={x}
-        previousNodeY={y}
-      />
-    </Animated.View>
-  );
-};
-
-type RecursiveNodeProps = {
-  x: SharedValue<number>;
-  y: SharedValue<number>;
-  allNodes: Node[];
-  nodeIndex: number;
-  previousNodeX: SharedValue<number>;
-  previousNodeY: SharedValue<number>;
-};
-
-const RecursiveNode = ({
-  x,
-  y,
-  allNodes,
-  nodeIndex,
-  previousNodeX,
-  previousNodeY,
-}: RecursiveNodeProps) => {
-  // Render current node and recursively render first follower if any
-  const nextNode = allNodes[nodeIndex + 1];
-  if (!nextNode) {
-    return <LastNodeStanding x={x} y={y} />;
-  }
-
-  return (
-    <NonLastRecursiveNode
-      nextNode={nextNode}
-      allNodes={allNodes}
-      nodeIndex={nodeIndex}
-      x={x}
-      y={y}
-      previousNodeX={previousNodeX}
-      previousNodeY={previousNodeY}
-    />
-  );
-};
-
-const NonLastRecursiveNode = ({
-  allNodes,
-  nodeIndex,
-  x,
-  y,
-  nextNode,
-  previousNodeX,
-  previousNodeY,
-}: RecursiveNodeProps & {
-  nextNode: Node;
-}) => {
-  const animatedStyle = useAnimatedStyle(() => ({
-    position: "absolute",
-    transform: [{ translateX: x.value }, { translateY: y.value }],
-  }));
-
-  // If there's a follower, create shared values for its position
-  const followerX = useSharedValue(nextNode.x - allNodes[nodeIndex].x);
-  const followerY = useSharedValue(nextNode.y - allNodes[nodeIndex].y);
-
-  useDerivedValue(() => {
-    const currentNode = allNodes[nodeIndex];
-    const theoreticalDistanceWithCurrentNode = Math.sqrt(
-      (currentNode.x - nextNode.x) ** 2 + (currentNode.y - nextNode.y) ** 2
-    );
-    const distanceWithCurrentNode = Math.sqrt(
-      followerX.value ** 2 + followerY.value ** 2
-    );
-
-    if (distanceWithCurrentNode === 0) {
-      return;
-    }
-
-    const sinusSign = Math.sign(
-      Math.asin(followerY.value / distanceWithCurrentNode)
-    );
-    const theta =
-      sinusSign * Math.acos(followerX.value / distanceWithCurrentNode);
-    if (distanceWithCurrentNode - theoreticalDistanceWithCurrentNode > 0.0001) {
-      followerX.value = withSpring(
-        Math.cos(theta) * theoreticalDistanceWithCurrentNode
-      );
-      followerY.value = withSpring(
-        Math.sin(theta) * theoreticalDistanceWithCurrentNode
-      );
-    } else {
-      const distanceBetweenPreviousAndCurrent = Math.sqrt(
-        (x.value - previousNodeX.value) ** 2 +
-          (y.value - previousNodeY.value) ** 2
-      );
-      const sinusSignBetweenPreviousAndCurrent = Math.sign(
-        Math.asin(
-          (y.value - previousNodeY.value) / distanceBetweenPreviousAndCurrent
-        )
-      );
-      const thetaBetweenPreviousAndCurrent =
-        sinusSignBetweenPreviousAndCurrent *
-        Math.acos(
-          (x.value - previousNodeX.value) / distanceBetweenPreviousAndCurrent
-        );
-
-      followerX.value = withSpring(
-        Math.cos(thetaBetweenPreviousAndCurrent) *
-          theoreticalDistanceWithCurrentNode,
-        { duration: 0 }
-      );
-      followerY.value = withSpring(
-        Math.sin(thetaBetweenPreviousAndCurrent) *
-          theoreticalDistanceWithCurrentNode,
-        { duration: 0 }
-      );
-    }
-  });
-
-  return (
-    <Animated.View style={animatedStyle}>
-      <RNSVGNode />
-      <RecursiveNode
-        x={followerX}
-        y={followerY}
-        allNodes={allNodes}
-        nodeIndex={nodeIndex + 1}
-        previousNodeX={x}
-        previousNodeY={y}
-      />
-    </Animated.View>
-  );
-};
-
-const LastNodeStanding = ({
-  x,
-  y,
-}: {
-  x: SharedValue<number>;
-  y: SharedValue<number>;
-}) => {
   const animatedStyle = useAnimatedStyle(() => ({
     position: "absolute",
     transform: [{ translateX: x.value }, { translateY: y.value }],
@@ -254,7 +95,7 @@ const LastNodeStanding = ({
 
   return (
     <Animated.View style={animatedStyle}>
-      <RNSVGNode />
+      <RNSVGNode size={size} />
     </Animated.View>
   );
 };
