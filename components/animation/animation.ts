@@ -62,7 +62,7 @@ export const moveAnimalTo = ({
         y:
           Math.sin(theta) * theoreticalDistanceWithPreviousNode +
           previousNode.y,
-        size: theoreticalDistanceWithPreviousNode,
+        size: currentNode.size,
       };
     }
   }

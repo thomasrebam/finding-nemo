@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -12,6 +12,7 @@ import { useEffect, useRef } from "react";
 import { Animal } from "../animation";
 import { PositionService } from "./PositionService";
 import { RNSVGNode } from "./RNSVGNode";
+import { SkiaFishBody } from "./SkiaFishBody";
 
 type Props = {
   animal: Animal;
@@ -64,6 +65,10 @@ export const Body = ({ animal }: Props) => {
 
   return (
     <View style={styles.container}>
+      <SkiaFishBody
+        width={Dimensions.get("window").width}
+        height={Dimensions.get("window").height}
+      />
       <GestureDetector gesture={gesture}>
         <Animated.View style={pointerAnimatedStyles} />
       </GestureDetector>
