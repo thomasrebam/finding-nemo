@@ -1,4 +1,4 @@
-import { Canvas, Group, Path } from "@shopify/react-native-skia";
+import { Canvas, Circle, Group, Path } from "@shopify/react-native-skia";
 import React, { useEffect } from "react";
 import { useDerivedValue, useSharedValue } from "react-native-reanimated";
 import { AnimalNode } from "../animation";
@@ -64,8 +64,6 @@ export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
 
         const tipHead1X = node.x - Math.cos(angle) * headRadius;
         const tipHead1Y = node.y - Math.sin(angle) * headRadius;
-        const tipHead2X = node.x - Math.cos(angle + Math.PI / 6) * headRadius;
-        const tipHead2Y = node.y - Math.sin(angle + Math.PI / 6) * headRadius;
         const tipHead3X = node.x - Math.cos(angle - Math.PI / 6) * headRadius;
         const tipHead3Y = node.y - Math.sin(angle - Math.PI / 6) * headRadius;
 
@@ -75,10 +73,6 @@ export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
 
         const tipHeadBottom1X = tipHead1X; // Same tip point
         const tipHeadBottom1Y = tipHead1Y;
-        const tipHeadBottom2X =
-          node.x - Math.cos(angle - Math.PI / 6) * headRadius; // Mirror of tipHead3
-        const tipHeadBottom2Y =
-          node.y - Math.sin(angle - Math.PI / 6) * headRadius;
         const tipHeadBottom3X =
           node.x - Math.cos(angle + Math.PI / 6) * headRadius; // Mirror of tipHead2
         const tipHeadBottom3Y =
@@ -146,11 +140,73 @@ export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
     return pathString;
   }, [spinePositions]);
 
+  // Create separate derived values for each eye coordinate
+  const topEyeX = useDerivedValue(() => {
+    const spineNodes = spinePositions.value;
+    if (spineNodes.length < 2) return 0;
+
+    const headNode = spineNodes[0];
+    const next = spineNodes[1];
+    const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);
+    const currentWidth = headNode.size * 3;
+    const headRadius = currentWidth / 2;
+    const perpAngle = angle + Math.PI / 2;
+
+    return headNode.x + Math.cos(perpAngle) * headRadius * 0.7;
+  }, [spinePositions]);
+
+  const topEyeY = useDerivedValue(() => {
+    const spineNodes = spinePositions.value;
+    if (spineNodes.length < 2) return 0;
+
+    const headNode = spineNodes[0];
+    const next = spineNodes[1];
+    const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);
+    const currentWidth = headNode.size * 3;
+    const headRadius = currentWidth / 2;
+    const perpAngle = angle + Math.PI / 2;
+
+    return headNode.y + Math.sin(perpAngle) * headRadius * 0.7;
+  }, [spinePositions]);
+
+  const bottomEyeX = useDerivedValue(() => {
+    const spineNodes = spinePositions.value;
+    if (spineNodes.length < 2) return 0;
+
+    const headNode = spineNodes[0];
+    const next = spineNodes[1];
+    const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);
+    const currentWidth = headNode.size * 3;
+    const headRadius = currentWidth / 2;
+    const perpAngle = angle + Math.PI / 2;
+
+    return headNode.x - Math.cos(perpAngle) * headRadius * 0.7;
+  }, [spinePositions]);
+
+  const bottomEyeY = useDerivedValue(() => {
+    const spineNodes = spinePositions.value;
+    if (spineNodes.length < 2) return 0;
+
+    const headNode = spineNodes[0];
+    const next = spineNodes[1];
+    const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);
+    const currentWidth = headNode.size * 3;
+    const headRadius = currentWidth / 2;
+    const perpAngle = angle + Math.PI / 2;
+
+    return headNode.y - Math.sin(perpAngle) * headRadius * 0.7;
+  }, [spinePositions]);
+
   return (
     <Canvas style={{ width, height, position: "absolute" }}>
       <Group>
+        {/* Fish body */}
         <Path path={fishPath} color="#4A90E2" style="fill" />
         <Path path={fishPath} color="#2E5A8A" style="stroke" strokeWidth={2} />
+
+        {/* Eyes */}
+        <Circle cx={topEyeX} cy={topEyeY} r={3} color="#2E5A8A" />
+        <Circle cx={bottomEyeX} cy={bottomEyeY} r={3} color="#2E5A8A" />
       </Group>
     </Canvas>
   );
