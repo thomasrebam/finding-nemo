@@ -50,39 +50,96 @@ export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
       }
 
       // Use the node's size to determine the fish width at this point
-      const currentWidth = node.size; // Increased multiplier to make size differences more visible
-
-      // Perpendicular angle for offsets
+      const currentWidth = node.size * 3;
       const perpAngle = angle + Math.PI / 2;
 
-      // Create offset points
-      const offsetX = (Math.cos(perpAngle) * currentWidth) / 2;
-      const offsetY = (Math.sin(perpAngle) * currentWidth) / 2;
+      // Special handling for the head node (first node)
+      if (index === 0) {
+        // Create a more detailed head shape for BOTH top and bottom
+        const headRadius = currentWidth / 2;
 
-      topPoints.push({
-        x: node.x + offsetX,
-        y: node.y + offsetY,
-      });
+        // Top head points
+        const sideHead1X = node.x + Math.cos(perpAngle) * headRadius;
+        const sideHead1Y = node.y + Math.sin(perpAngle) * headRadius;
 
-      bottomPoints.push({
-        x: node.x - offsetX,
-        y: node.y - offsetY,
-      });
+        const tipHead1X = node.x - Math.cos(angle) * headRadius;
+        const tipHead1Y = node.y - Math.sin(angle) * headRadius;
+        const tipHead2X = node.x - Math.cos(angle + Math.PI / 6) * headRadius;
+        const tipHead2Y = node.y - Math.sin(angle + Math.PI / 6) * headRadius;
+        const tipHead3X = node.x - Math.cos(angle - Math.PI / 6) * headRadius;
+        const tipHead3Y = node.y - Math.sin(angle - Math.PI / 6) * headRadius;
+
+        // Bottom head points (mirror of top)
+        const sideHeadBottomX = node.x - Math.cos(perpAngle) * headRadius;
+        const sideHeadBottomY = node.y - Math.sin(perpAngle) * headRadius;
+
+        const tipHeadBottom1X = tipHead1X; // Same tip point
+        const tipHeadBottom1Y = tipHead1Y;
+        const tipHeadBottom2X =
+          node.x - Math.cos(angle - Math.PI / 6) * headRadius; // Mirror of tipHead3
+        const tipHeadBottom2Y =
+          node.y - Math.sin(angle - Math.PI / 6) * headRadius;
+        const tipHeadBottom3X =
+          node.x - Math.cos(angle + Math.PI / 6) * headRadius; // Mirror of tipHead2
+        const tipHeadBottom3Y =
+          node.y - Math.sin(angle + Math.PI / 6) * headRadius;
+
+        // Add detailed points to TOP
+        topPoints.push({ x: tipHead1X, y: tipHead1Y });
+        topPoints.push({ x: tipHead3X, y: tipHead3Y });
+        topPoints.push({ x: sideHead1X, y: sideHead1Y });
+
+        // Add detailed points to BOTTOM (in reverse order for proper path)
+        bottomPoints.push({ x: tipHeadBottom1X, y: tipHeadBottom1Y });
+        bottomPoints.push({ x: tipHeadBottom3X, y: tipHeadBottom3Y });
+        bottomPoints.push({ x: sideHeadBottomX, y: sideHeadBottomY });
+      } else {
+        // Regular body nodes
+        const offsetX = (Math.cos(perpAngle) * currentWidth) / 2;
+        const offsetY = (Math.sin(perpAngle) * currentWidth) / 2;
+
+        topPoints.push({
+          x: node.x + offsetX,
+          y: node.y + offsetY,
+        });
+
+        bottomPoints.push({
+          x: node.x - offsetX,
+          y: node.y - offsetY,
+        });
+      }
     });
 
     if (topPoints.length === 0) return "M 0 0";
 
-    // Build SVG path string - using linear connections to preserve width differences
+    // Build SVG path string with smooth curves for ALL points
     let pathString = `M ${topPoints[0].x} ${topPoints[0].y}`;
 
-    // Draw top side with linear connections to preserve width variations
-    for (let i = 1; i < topPoints.length; i++) {
-      pathString += ` L ${topPoints[i].x} ${topPoints[i].y}`;
+    // Draw top side - smooth curves for ALL points
+    for (let i = 0; i < topPoints.length; i++) {
+      if (i === topPoints.length - 1) {
+        // Last point - just line to it
+      } else {
+        // Smooth curves between all points
+        const nextPoint = topPoints[i + 1];
+        const controlX = (topPoints[i].x + nextPoint.x) / 2;
+        const controlY = (topPoints[i].y + nextPoint.y) / 2;
+        pathString += ` Q ${topPoints[i].x} ${topPoints[i].y} ${controlX} ${controlY}`;
+      }
     }
 
-    // Connect to bottom side (reverse order)
+    // Connect to bottom side (reverse order) - smooth curves for ALL points
     for (let i = bottomPoints.length - 1; i >= 0; i--) {
-      pathString += ` L ${bottomPoints[i].x} ${bottomPoints[i].y}`;
+      if (i === 0) {
+        // Last bottom point - just line to it to close the shape
+        pathString += ` Q ${bottomPoints[i].x} ${bottomPoints[i].y} ${topPoints[0].x} ${topPoints[0].y}`;
+      } else {
+        // Smooth curves between all bottom points
+        const prevPoint = bottomPoints[i - 1];
+        const controlX = (bottomPoints[i].x + prevPoint.x) / 2;
+        const controlY = (bottomPoints[i].y + prevPoint.y) / 2;
+        pathString += ` Q ${bottomPoints[i].x} ${bottomPoints[i].y} ${controlX} ${controlY}`;
+      }
     }
 
     pathString += " Z"; // Close path
