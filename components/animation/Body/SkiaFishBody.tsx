@@ -35,7 +35,7 @@ export const SkiaFishBody = () => {
       <Group>
         {/* Fish body */}
         <Path path={fishPath} color="#4A90E2" style="fill" />
-        <Path path={fishPath} color="#2E5A8A" style="stroke" strokeWidth={2} />
+        <Path path={fishPath} color="#4A90E2" style="stroke" strokeWidth={2} />
 
         {/* Eyes */}
         <Circle cx={topEyeX} cy={topEyeY} r={3} color="#2E5A8A" />
