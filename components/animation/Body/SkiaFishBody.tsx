@@ -77,7 +77,7 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
       }
 
       // Use the node's size to determine the fish width at this point
-      const currentWidth = node.size * 3;
+      const currentWidth = node.displayedSize * 3;
       const perpAngle = angle + Math.PI / 2;
 
       // Special handling for the head node (first node)
@@ -263,7 +263,7 @@ const useEyesValues = (spinePositions: SharedValue<AnimalNode[]>) => {
     const headNode = spineNodes[0];
     const next = spineNodes[1];
     const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);
-    const currentWidth = headNode.size * 3;
+    const currentWidth = headNode.displayedSize * 3;
     const headRadius = currentWidth / 2;
     const perpAngle = angle + Math.PI / 2;
 
@@ -277,7 +277,7 @@ const useEyesValues = (spinePositions: SharedValue<AnimalNode[]>) => {
     const headNode = spineNodes[0];
     const next = spineNodes[1];
     const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);
-    const currentWidth = headNode.size * 3;
+    const currentWidth = headNode.displayedSize * 3;
     const headRadius = currentWidth / 2;
     const perpAngle = angle + Math.PI / 2;
 
@@ -291,7 +291,7 @@ const useEyesValues = (spinePositions: SharedValue<AnimalNode[]>) => {
     const headNode = spineNodes[0];
     const next = spineNodes[1];
     const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);
-    const currentWidth = headNode.size * 3;
+    const currentWidth = headNode.displayedSize * 3;
     const headRadius = currentWidth / 2;
     const perpAngle = angle + Math.PI / 2;
 
@@ -305,7 +305,7 @@ const useEyesValues = (spinePositions: SharedValue<AnimalNode[]>) => {
     const headNode = spineNodes[0];
     const next = spineNodes[1];
     const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);
-    const currentWidth = headNode.size * 3;
+    const currentWidth = headNode.displayedSize * 3;
     const headRadius = currentWidth / 2;
     const perpAngle = angle + Math.PI / 2;
 

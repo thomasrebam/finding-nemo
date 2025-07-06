@@ -7,18 +7,21 @@ const Fishes = () => {
       <Body
         animal={{
           spine: [
-            { x: 15, y: 15, size: 10 },
-            { x: 30, y: 30, size: 12 },
-            { x: 45, y: 45, size: 10 },
-            { x: 60, y: 60, size: 9 },
-            { x: 75, y: 75, size: 8 },
-            { x: 90, y: 90, size: 7 },
-            { x: 105, y: 105, size: 6 },
-            { x: 120, y: 120, size: 5 },
-            { x: 135, y: 135, size: 4 },
-            { x: 150, y: 150, size: 3 },
-            { x: 165, y: 165, size: 2 },
-            { x: 180, y: 180, size: 1 },
+            { x: 15, y: 15, size: 10, displayedSize: 10 },
+            { x: 30, y: 30, size: 12, displayedSize: 12 },
+            { x: 45, y: 45, size: 10, displayedSize: 10 },
+            { x: 60, y: 60, size: 9, displayedSize: 9 },
+            { x: 75, y: 75, size: 8, displayedSize: 8 },
+            { x: 90, y: 90, size: 7, displayedSize: 7 },
+            { x: 105, y: 105, size: 7, displayedSize: 6 },
+            { x: 120, y: 120, size: 7, displayedSize: 5 },
+            { x: 135, y: 135, size: 7, displayedSize: 4 },
+            { x: 150, y: 150, size: 7, displayedSize: 3 },
+            { x: 165, y: 165, size: 7, displayedSize: 2 },
+            { x: 165, y: 165, size: 7, displayedSize: 2 },
+            { x: 180, y: 180, size: 7, displayedSize: 1 },
+            { x: 180, y: 180, size: 7, displayedSize: 1 },
+            { x: 180, y: 180, size: 7, displayedSize: 1 },
           ],
         }}
       />

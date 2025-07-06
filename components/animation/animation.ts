@@ -1,7 +1,10 @@
 export type AnimalNode = {
   x: number;
   y: number;
+  // represents the distance between the node and the next node
   size: number;
+  // represents the width of the node on the screen
+  displayedSize: number;
 };
 
 export type Animal = {
@@ -33,6 +36,7 @@ export const moveAnimalTo = ({
         size: currentNode.size,
         x: Math.cos(theta) * MAX_DISTANCE_BY_INCREMENT + currentNode.x,
         y: Math.sin(theta) * MAX_DISTANCE_BY_INCREMENT + currentNode.y,
+        displayedSize: currentNode.displayedSize,
       };
 
       continue;
@@ -63,6 +67,7 @@ export const moveAnimalTo = ({
           Math.sin(theta) * theoreticalDistanceWithPreviousNode +
           previousNode.y,
         size: currentNode.size,
+        displayedSize: currentNode.displayedSize,
       };
     }
   }
