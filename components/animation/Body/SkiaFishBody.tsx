@@ -8,12 +8,7 @@ import {
 import { AnimalNode } from "../animation";
 import { PositionService } from "./PositionService";
 
-type Props = {
-  width?: number;
-  height?: number;
-};
-
-export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
+export const SkiaFishBody = () => {
   const spinePositions = useSharedValue<AnimalNode[]>([]);
 
   // Subscribe to position service
@@ -31,7 +26,12 @@ export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
     useEyesValues(spinePositions);
 
   return (
-    <Canvas style={{ width, height, position: "absolute" }}>
+    <Canvas
+      style={{
+        width: "100%",
+        height: "100%",
+      }}
+    >
       <Group>
         {/* Fish body */}
         <Path path={fishPath} color="#4A90E2" style="fill" />

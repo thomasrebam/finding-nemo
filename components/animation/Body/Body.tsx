@@ -1,4 +1,3 @@
-import { Dimensions, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -8,7 +7,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { Animal } from "../animation";
 import { PositionService } from "./PositionService";
 import { RNSVGNode } from "./RNSVGNode";
@@ -64,18 +63,17 @@ export const Body = ({ animal }: Props) => {
   });
 
   return (
-    <View style={styles.container}>
-      <SkiaFishBody
-        width={Dimensions.get("window").width}
-        height={Dimensions.get("window").height}
-      />
+    <Fragment>
+      <SkiaFishBody />
       <GestureDetector gesture={gesture}>
         <Animated.View style={pointerAnimatedStyles} />
       </GestureDetector>
       {/* {animal.spine.map((node, index) => {
-        return <AnimatedNode key={index} index={index} size={node.size} />;
+        return (
+          <AnimatedNode key={index} index={index} size={node.displayedSize} />
+        );
       })} */}
-    </View>
+    </Fragment>
   );
 };
 
@@ -104,9 +102,3 @@ const AnimatedNode = ({ index, size }: { index: number; size?: number }) => {
     </Animated.View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
