@@ -1,6 +1,10 @@
 import { Canvas, Circle, Group, Path } from "@shopify/react-native-skia";
 import React, { useEffect } from "react";
-import { useDerivedValue, useSharedValue } from "react-native-reanimated";
+import {
+  SharedValue,
+  useDerivedValue,
+  useSharedValue,
+} from "react-native-reanimated";
 import { AnimalNode } from "../animation";
 import { PositionService } from "./PositionService";
 
@@ -12,6 +16,7 @@ type Props = {
 export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
   const spinePositions = useSharedValue<AnimalNode[]>([]);
 
+  // Subscribe to position service
   useEffect(() => {
     const removeListener = PositionService.subscribe((positions) => {
       spinePositions.value = positions;
@@ -19,6 +24,28 @@ export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
     return () => removeListener();
   }, []);
 
+  const { fishPath } = useFishPath(spinePositions);
+
+  // Create separate derived values for each eye coordinate
+  const { topEyeX, topEyeY, bottomEyeX, bottomEyeY } =
+    useEyesValues(spinePositions);
+
+  return (
+    <Canvas style={{ width, height, position: "absolute" }}>
+      <Group>
+        {/* Fish body */}
+        <Path path={fishPath} color="#4A90E2" style="fill" />
+        <Path path={fishPath} color="#2E5A8A" style="stroke" strokeWidth={2} />
+
+        {/* Eyes */}
+        <Circle cx={topEyeX} cy={topEyeY} r={3} color="#2E5A8A" />
+        <Circle cx={bottomEyeX} cy={bottomEyeY} r={3} color="#2E5A8A" />
+      </Group>
+    </Canvas>
+  );
+};
+
+const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
   const fishPath = useDerivedValue(() => {
     const spineNodes = spinePositions.value;
 
@@ -137,10 +164,14 @@ export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
     }
 
     pathString += " Z"; // Close path
+
     return pathString;
   }, [spinePositions]);
 
-  // Create separate derived values for each eye coordinate
+  return { fishPath };
+};
+
+const useEyesValues = (spinePositions: SharedValue<AnimalNode[]>) => {
   const topEyeX = useDerivedValue(() => {
     const spineNodes = spinePositions.value;
     if (spineNodes.length < 2) return 0;
@@ -197,17 +228,5 @@ export const SkiaFishBody = ({ width = 300, height = 300 }: Props) => {
     return headNode.y - Math.sin(perpAngle) * headRadius * 0.7;
   }, [spinePositions]);
 
-  return (
-    <Canvas style={{ width, height, position: "absolute" }}>
-      <Group>
-        {/* Fish body */}
-        <Path path={fishPath} color="#4A90E2" style="fill" />
-        <Path path={fishPath} color="#2E5A8A" style="stroke" strokeWidth={2} />
-
-        {/* Eyes */}
-        <Circle cx={topEyeX} cy={topEyeY} r={3} color="#2E5A8A" />
-        <Circle cx={bottomEyeX} cy={bottomEyeY} r={3} color="#2E5A8A" />
-      </Group>
-    </Canvas>
-  );
+  return { topEyeX, topEyeY, bottomEyeX, bottomEyeY };
 };
