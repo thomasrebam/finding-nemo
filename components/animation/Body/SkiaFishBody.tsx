@@ -136,6 +136,90 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
     // Build SVG path string with smooth curves for ALL points
     let pathString = `M ${topPoints[0].x} ${topPoints[0].y}`;
 
+    // Add top fin
+    if (topPoints.length > 1) {
+      const middleIndex = Math.floor(topPoints.length / 2) + 1;
+      const middlePoint = topPoints[middleIndex];
+      const angle = Math.atan2(
+        topPoints[middleIndex + 1].x - topPoints[middleIndex - 1].x,
+        topPoints[middleIndex + 1].y - topPoints[middleIndex - 1].y
+      );
+      const offsetX1 = (Math.cos(-angle - Math.PI / 2.5) * 15) / 2;
+      const offsetY1 = (Math.sin(-angle - Math.PI / 2.5) * 15) / 2;
+      const offsetX2 = (Math.cos(-angle - Math.PI / 6) * 5) / 2;
+      const offsetY2 = (Math.sin(-angle - Math.PI / 6) * 5) / 2;
+      topPoints.splice(middleIndex, 0, {
+        x: middlePoint.x - offsetX1,
+        y: middlePoint.y - offsetY1,
+      });
+      topPoints.splice(middleIndex, 0, {
+        x: middlePoint.x - offsetX2,
+        y: middlePoint.y - offsetY2,
+      });
+    }
+    if (topPoints.length > 5) {
+      const baseIndex = 5;
+      const middlePoint = topPoints[baseIndex];
+      const angle = Math.atan2(
+        topPoints[baseIndex + 1].x - topPoints[baseIndex - 1].x,
+        topPoints[baseIndex + 1].y - topPoints[baseIndex - 1].y
+      );
+      const offsetX2 = (Math.cos(-angle - Math.PI / 6) * 10) / 2;
+      const offsetY2 = (Math.sin(-angle - Math.PI / 6) * 10) / 2;
+      const offsetX3 = (Math.cos(-angle - Math.PI / 8) * 30) / 2;
+      const offsetY3 = (Math.sin(-angle - Math.PI / 8) * 30) / 2;
+      topPoints.splice(baseIndex, 0, {
+        x: middlePoint.x - offsetX2,
+        y: middlePoint.y - offsetY2,
+      });
+      topPoints.splice(baseIndex, 0, {
+        x: middlePoint.x - offsetX3,
+        y: middlePoint.y - offsetY3,
+      });
+    }
+
+    // Add bottom fin
+    if (bottomPoints.length > 1) {
+      const middleIndex = Math.floor(bottomPoints.length / 2) + 1;
+      const middlePoint = bottomPoints[middleIndex];
+      const angle = Math.atan2(
+        bottomPoints[middleIndex - 1].x - bottomPoints[middleIndex + 1].x,
+        bottomPoints[middleIndex - 1].y - bottomPoints[middleIndex + 1].y
+      );
+      const offsetX1 = (Math.cos(-angle + Math.PI / 2.5) * 15) / 2;
+      const offsetY1 = (Math.sin(-angle + Math.PI / 2.5) * 15) / 2;
+      const offsetX2 = (Math.cos(-angle + Math.PI / 6) * 5) / 2;
+      const offsetY2 = (Math.sin(-angle + Math.PI / 6) * 5) / 2;
+      bottomPoints.splice(middleIndex, 0, {
+        x: middlePoint.x - offsetX2,
+        y: middlePoint.y - offsetY2,
+      });
+      bottomPoints.splice(middleIndex, 0, {
+        x: middlePoint.x - offsetX1,
+        y: middlePoint.y - offsetY1,
+      });
+    }
+    if (bottomPoints.length > 4) {
+      const baseIndex = 5;
+      const middlePoint = bottomPoints[baseIndex];
+      const angle = Math.atan2(
+        bottomPoints[baseIndex - 1].x - bottomPoints[baseIndex + 1].x,
+        bottomPoints[baseIndex - 1].y - bottomPoints[baseIndex + 1].y
+      );
+      const offsetX2 = (Math.cos(-angle + Math.PI / 6) * 10) / 2;
+      const offsetY2 = (Math.sin(-angle + Math.PI / 6) * 10) / 2;
+      const offsetX3 = (Math.cos(-angle + Math.PI / 8) * 30) / 2;
+      const offsetY3 = (Math.sin(-angle + Math.PI / 8) * 30) / 2;
+      bottomPoints.splice(baseIndex, 0, {
+        x: middlePoint.x - offsetX2,
+        y: middlePoint.y - offsetY2,
+      });
+      bottomPoints.splice(baseIndex, 0, {
+        x: middlePoint.x - offsetX3,
+        y: middlePoint.y - offsetY3,
+      });
+    }
+
     // Draw top side - smooth curves for ALL points
     for (let i = 0; i < topPoints.length; i++) {
       if (i === topPoints.length - 1) {
