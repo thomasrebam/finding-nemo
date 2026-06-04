@@ -6,7 +6,7 @@ export class PositionService {
     spine: [],
   };
 
-  private static eventEmitter = new NativeEventEmitter();
+  private static readonly eventEmitter = new NativeEventEmitter({} as any);
 
   static setPositions({
     animal,
