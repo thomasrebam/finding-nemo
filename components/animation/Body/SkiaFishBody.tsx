@@ -80,14 +80,14 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
     }
 
     // Create offset points for top and bottom of fish
-    const topPoints: { x: number; y: number }[] = [];
-    const bottomPoints: { x: number; y: number }[] = [];
+    const leftSidePoints: { x: number; y: number }[] = [];
+    const rightSidePoints: { x: number; y: number }[] = [];
 
     spineNodes.forEach((node, index) => {
       // Calculate perpendicular offset
       let angle = 0;
 
-      if (index === 0 && spineNodes.length > 1) {
+      if (index === 0) {
         // First node: use angle to next node
         const next = spineNodes[index + 1];
         angle = Math.atan2(next.y - node.y, next.x - node.x);
@@ -132,144 +132,144 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
           node.y - Math.sin(angle + Math.PI / 6) * headRadius;
 
         // Add detailed points to TOP
-        topPoints.push({ x: tipHead1X, y: tipHead1Y });
-        topPoints.push({ x: tipHead3X, y: tipHead3Y });
-        topPoints.push({ x: sideHead1X, y: sideHead1Y });
+        leftSidePoints.push({ x: tipHead1X, y: tipHead1Y });
+        leftSidePoints.push({ x: tipHead3X, y: tipHead3Y });
+        leftSidePoints.push({ x: sideHead1X, y: sideHead1Y });
 
         // Add detailed points to BOTTOM (in reverse order for proper path)
-        bottomPoints.push({ x: tipHeadBottom1X, y: tipHeadBottom1Y });
-        bottomPoints.push({ x: tipHeadBottom3X, y: tipHeadBottom3Y });
-        bottomPoints.push({ x: sideHeadBottomX, y: sideHeadBottomY });
+        rightSidePoints.push({ x: tipHeadBottom1X, y: tipHeadBottom1Y });
+        rightSidePoints.push({ x: tipHeadBottom3X, y: tipHeadBottom3Y });
+        rightSidePoints.push({ x: sideHeadBottomX, y: sideHeadBottomY });
       } else {
         // Regular body nodes
         const offsetX = (Math.cos(perpAngle) * currentWidth) / 2;
         const offsetY = (Math.sin(perpAngle) * currentWidth) / 2;
 
-        topPoints.push({
+        leftSidePoints.push({
           x: node.x + offsetX,
           y: node.y + offsetY,
         });
 
-        bottomPoints.push({
+        rightSidePoints.push({
           x: node.x - offsetX,
           y: node.y - offsetY,
         });
       }
     });
 
-    if (topPoints.length === 0) return "M 0 0";
+    if (leftSidePoints.length === 0) return "M 0 0";
 
     // Build SVG path string with smooth curves for ALL points
-    let pathString = `M ${topPoints[0].x} ${topPoints[0].y}`;
+    let pathString = `M ${leftSidePoints[0].x} ${leftSidePoints[0].y}`;
 
     // Add top fin
-    if (topPoints.length > 1) {
-      const middleIndex = Math.floor(topPoints.length / 2) + 1;
-      const middlePoint = topPoints[middleIndex];
+    if (leftSidePoints.length > 1) {
+      const middleIndex = Math.floor(leftSidePoints.length / 2) + 1;
+      const middlePoint = leftSidePoints[middleIndex];
       const angle = Math.atan2(
-        topPoints[middleIndex + 1].x - topPoints[middleIndex - 1].x,
-        topPoints[middleIndex + 1].y - topPoints[middleIndex - 1].y
+        leftSidePoints[middleIndex + 1].x - leftSidePoints[middleIndex - 1].x,
+        leftSidePoints[middleIndex + 1].y - leftSidePoints[middleIndex - 1].y
       );
       const offsetX1 = (Math.cos(-angle - Math.PI / 2.5) * 15) / 2;
       const offsetY1 = (Math.sin(-angle - Math.PI / 2.5) * 15) / 2;
       const offsetX2 = (Math.cos(-angle - Math.PI / 6) * 5) / 2;
       const offsetY2 = (Math.sin(-angle - Math.PI / 6) * 5) / 2;
-      topPoints.splice(middleIndex, 0, {
+      leftSidePoints.splice(middleIndex, 0, {
         x: middlePoint.x - offsetX1,
         y: middlePoint.y - offsetY1,
       });
-      topPoints.splice(middleIndex, 0, {
+      leftSidePoints.splice(middleIndex, 0, {
         x: middlePoint.x - offsetX2,
         y: middlePoint.y - offsetY2,
       });
     }
-    if (topPoints.length > 5) {
+    if (leftSidePoints.length > 5) {
       const baseIndex = 5;
-      const middlePoint = topPoints[baseIndex];
+      const middlePoint = leftSidePoints[baseIndex];
       const angle = Math.atan2(
-        topPoints[baseIndex + 1].x - topPoints[baseIndex - 1].x,
-        topPoints[baseIndex + 1].y - topPoints[baseIndex - 1].y
+        leftSidePoints[baseIndex + 1].x - leftSidePoints[baseIndex - 1].x,
+        leftSidePoints[baseIndex + 1].y - leftSidePoints[baseIndex - 1].y
       );
       const offsetX2 = (Math.cos(-angle - Math.PI / 6) * 10) / 2;
       const offsetY2 = (Math.sin(-angle - Math.PI / 6) * 10) / 2;
       const offsetX3 = (Math.cos(-angle - Math.PI / 8) * 30) / 2;
       const offsetY3 = (Math.sin(-angle - Math.PI / 8) * 30) / 2;
-      topPoints.splice(baseIndex, 0, {
+      leftSidePoints.splice(baseIndex, 0, {
         x: middlePoint.x - offsetX2,
         y: middlePoint.y - offsetY2,
       });
-      topPoints.splice(baseIndex, 0, {
+      leftSidePoints.splice(baseIndex, 0, {
         x: middlePoint.x - offsetX3,
         y: middlePoint.y - offsetY3,
       });
     }
 
     // Add bottom fin
-    if (bottomPoints.length > 1) {
-      const middleIndex = Math.floor(bottomPoints.length / 2) + 1;
-      const middlePoint = bottomPoints[middleIndex];
+    if (rightSidePoints.length > 1) {
+      const middleIndex = Math.floor(rightSidePoints.length / 2) + 1;
+      const middlePoint = rightSidePoints[middleIndex];
       const angle = Math.atan2(
-        bottomPoints[middleIndex - 1].x - bottomPoints[middleIndex + 1].x,
-        bottomPoints[middleIndex - 1].y - bottomPoints[middleIndex + 1].y
+        rightSidePoints[middleIndex - 1].x - rightSidePoints[middleIndex + 1].x,
+        rightSidePoints[middleIndex - 1].y - rightSidePoints[middleIndex + 1].y
       );
       const offsetX1 = (Math.cos(-angle + Math.PI / 2.5) * 15) / 2;
       const offsetY1 = (Math.sin(-angle + Math.PI / 2.5) * 15) / 2;
       const offsetX2 = (Math.cos(-angle + Math.PI / 6) * 5) / 2;
       const offsetY2 = (Math.sin(-angle + Math.PI / 6) * 5) / 2;
-      bottomPoints.splice(middleIndex, 0, {
+      rightSidePoints.splice(middleIndex, 0, {
         x: middlePoint.x - offsetX2,
         y: middlePoint.y - offsetY2,
       });
-      bottomPoints.splice(middleIndex, 0, {
+      rightSidePoints.splice(middleIndex, 0, {
         x: middlePoint.x - offsetX1,
         y: middlePoint.y - offsetY1,
       });
     }
-    if (bottomPoints.length > 4) {
+    if (rightSidePoints.length > 4) {
       const baseIndex = 5;
-      const middlePoint = bottomPoints[baseIndex];
+      const middlePoint = rightSidePoints[baseIndex];
       const angle = Math.atan2(
-        bottomPoints[baseIndex - 1].x - bottomPoints[baseIndex + 1].x,
-        bottomPoints[baseIndex - 1].y - bottomPoints[baseIndex + 1].y
+        rightSidePoints[baseIndex - 1].x - rightSidePoints[baseIndex + 1].x,
+        rightSidePoints[baseIndex - 1].y - rightSidePoints[baseIndex + 1].y
       );
       const offsetX2 = (Math.cos(-angle + Math.PI / 6) * 10) / 2;
       const offsetY2 = (Math.sin(-angle + Math.PI / 6) * 10) / 2;
       const offsetX3 = (Math.cos(-angle + Math.PI / 8) * 30) / 2;
       const offsetY3 = (Math.sin(-angle + Math.PI / 8) * 30) / 2;
-      bottomPoints.splice(baseIndex, 0, {
+      rightSidePoints.splice(baseIndex, 0, {
         x: middlePoint.x - offsetX2,
         y: middlePoint.y - offsetY2,
       });
-      bottomPoints.splice(baseIndex, 0, {
+      rightSidePoints.splice(baseIndex, 0, {
         x: middlePoint.x - offsetX3,
         y: middlePoint.y - offsetY3,
       });
     }
 
     // Draw top side - smooth curves for ALL points
-    for (let i = 0; i < topPoints.length; i++) {
-      if (i === topPoints.length - 1) {
+    for (let i = 0; i < leftSidePoints.length; i++) {
+      if (i === leftSidePoints.length - 1) {
         // Last point - just line to it
       } else {
         // Smooth curves between all points
-        const nextPoint = topPoints[i + 1];
-        const controlX = (topPoints[i].x + nextPoint.x) / 2;
-        const controlY = (topPoints[i].y + nextPoint.y) / 2;
-        pathString += ` Q ${topPoints[i].x} ${topPoints[i].y} ${controlX} ${controlY}`;
+        const nextPoint = leftSidePoints[i + 1];
+        const controlX = (leftSidePoints[i].x + nextPoint.x) / 2;
+        const controlY = (leftSidePoints[i].y + nextPoint.y) / 2;
+        pathString += ` Q ${leftSidePoints[i].x} ${leftSidePoints[i].y} ${controlX} ${controlY}`;
       }
     }
 
     // Connect to bottom side (reverse order) - smooth curves for ALL points
-    for (let i = bottomPoints.length - 1; i >= 0; i--) {
+    for (let i = rightSidePoints.length - 1; i >= 0; i--) {
       if (i === 0) {
         // Last bottom point - just line to it to close the shape
-        pathString += ` Q ${bottomPoints[i].x} ${bottomPoints[i].y} ${topPoints[0].x} ${topPoints[0].y}`;
+        pathString += ` Q ${rightSidePoints[i].x} ${rightSidePoints[i].y} ${leftSidePoints[0].x} ${leftSidePoints[0].y}`;
       } else {
         // Smooth curves between all bottom points
-        const prevPoint = bottomPoints[i - 1];
-        const controlX = (bottomPoints[i].x + prevPoint.x) / 2;
-        const controlY = (bottomPoints[i].y + prevPoint.y) / 2;
-        pathString += ` Q ${bottomPoints[i].x} ${bottomPoints[i].y} ${controlX} ${controlY}`;
+        const prevPoint = rightSidePoints[i - 1];
+        const controlX = (rightSidePoints[i].x + prevPoint.x) / 2;
+        const controlY = (rightSidePoints[i].y + prevPoint.y) / 2;
+        pathString += ` Q ${rightSidePoints[i].x} ${rightSidePoints[i].y} ${controlX} ${controlY}`;
       }
     }
 
