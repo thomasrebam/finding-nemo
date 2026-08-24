@@ -43,3 +43,5 @@ ios/
 # android
 android/
 
+# redraw 
+vendors/
