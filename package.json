@@ -43,7 +43,9 @@
     "react-native-web": "^0.21.2",
     "react-native-webgpu": "^0.8.4",
     "react-native-webview": "13.16.1",
-    "typegpu": "^0.12.3"
+    "typegpu": "^0.12.3",
+    "redraw": "file:./vendors/redraw-1.2.2.tgz",
+    "react-native-redraw": "file:./vendors/react-native-redraw-1.2.2.tgz"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
