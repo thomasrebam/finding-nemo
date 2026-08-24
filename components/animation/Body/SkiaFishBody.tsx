@@ -8,7 +8,7 @@ import {
   Skia,
   useClock,
 } from "@shopify/react-native-skia";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useWindowDimensions } from "react-native";
 import {
   SharedValue,
@@ -17,14 +17,6 @@ import {
 } from "react-native-reanimated";
 import { AnimalNode } from "../animation";
 import { PositionService } from "./PositionService";
-
-const shaderSource = Skia.RuntimeEffect.Make(`
-  uniform float4 colors[4];
-
-  vec4 main(vec2 p) {
-    return colors[3];
-  }
-`);
 
 const newSource = Skia.RuntimeEffect.Make(`
 uniform float iTime;
