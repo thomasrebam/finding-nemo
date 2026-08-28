@@ -13,7 +13,7 @@ import tgpu, { common, d, std } from "typegpu";
 // Hash function turning an integer index into a pseudo-random 2D point.
 const n22 = tgpu.fn(
   [d.vec2f],
-  d.vec2f,
+  d.vec2f
 )((p) => {
   "use gpu";
   let a = std.fract(p.xyx.mul(d.vec3f(452.6, 725.34, 921.2)));
@@ -73,7 +73,7 @@ const VoronoiCanvas = () => {
           return d.vec4f(col.x, col.y, col.z, 1);
         },
       }),
-    [root, iTime, iResolution],
+    [root, iTime, iResolution]
   );
 
   const { ref, ctxRef } = useConfigureContext();
@@ -88,5 +88,7 @@ const VoronoiCanvas = () => {
     ctxRef.current.present?.();
   });
 
-  return <Canvas ref={ref} style={StyleSheet.absoluteFill} />;
+  return (
+    <Canvas ref={ref} style={{ ...StyleSheet.absoluteFill, opacity: 0.5 }} />
+  );
 };

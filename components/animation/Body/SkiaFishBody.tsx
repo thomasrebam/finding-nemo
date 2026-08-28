@@ -38,7 +38,6 @@ export const SkiaFishBody = () => {
 
   return (
     <View style={StyleSheet.absoluteFill}>
-      <TypeGpuVoronoiBackground />
       {/* <SkiaVoronoiBackground /> */}
       <Canvas
         style={{
@@ -48,25 +47,26 @@ export const SkiaFishBody = () => {
       >
         <Group>
           {/* Fish body */}
-          <Path path={fishPath} color="#2E5A8A" style="fill" opacity={0.5} />
+          <Path path={fishPath} color="#2E5A8A" style="fill" opacity={1} />
 
           {/* Eyes */}
           <Circle
             cx={topEyeX}
             cy={topEyeY}
             r={3}
-            color="#2E5A8A"
+            color="#000000"
             opacity={0.5}
           />
           <Circle
             cx={bottomEyeX}
             cy={bottomEyeY}
             r={3}
-            color="#2E5A8A"
+            color="#000000"
             opacity={0.5}
           />
         </Group>
       </Canvas>
+      <TypeGpuVoronoiBackground />
     </View>
   );
 };
