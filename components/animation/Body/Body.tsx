@@ -10,8 +10,8 @@ import Animated, {
 import { Fragment, useEffect, useRef } from "react";
 import { Animal } from "../animation";
 import { PositionService } from "./PositionService";
+import { RedrawFishBody } from "./RedrawFishBody";
 import { RNSVGNode } from "./RNSVGNode";
-import { SkiaFishBody } from "./SkiaFishBody";
 
 type Props = {
   animal: Animal;
@@ -64,7 +64,7 @@ export const Body = ({ animal }: Props) => {
 
   return (
     <Fragment>
-      <SkiaFishBody />
+      <RedrawFishBody />
       <GestureDetector gesture={gesture}>
         <Animated.View style={pointerAnimatedStyles} />
       </GestureDetector>
