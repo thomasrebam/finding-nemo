@@ -68,11 +68,6 @@ export const Body = ({ animal }: Props) => {
       <GestureDetector gesture={gesture}>
         <Animated.View style={pointerAnimatedStyles} />
       </GestureDetector>
-      {/* {animal.spine.map((node, index) => {
-        return (
-          <AnimatedNode key={index} index={index} size={node.displayedSize} />
-        );
-      })} */}
     </Fragment>
   );
 };
