@@ -1,11 +1,19 @@
 import { Nemo } from "@/components/animation/Nemo";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Fishes = () => {
   return (
-    <View style={StyleSheet.absoluteFill}>
-      <Nemo />
-    </View>
+    <SafeAreaView
+      style={{
+        flex: 1,
+      }}
+      edges={["top", "bottom"]}
+    >
+      <View style={{ flex: 1 }}>
+        <Nemo />
+      </View>
+    </SafeAreaView>
   );
 };
 
