@@ -13,7 +13,7 @@ export type Animal = {
 
 const MAX_DISTANCE_BY_INCREMENT = 10;
 
-export const moveAnimalTo = ({
+export const computeNextSpine = ({
   animal,
   x,
   y,

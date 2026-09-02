@@ -1,5 +1,5 @@
 import { NativeEventEmitter } from "react-native";
-import { Animal, AnimalNode, moveAnimalTo } from "../animation";
+import { Animal, AnimalNode, computeNextSpine } from "../animation";
 
 export class PositionService {
   private static animal: Animal = {
@@ -15,7 +15,7 @@ export class PositionService {
     animal: Animal;
     goTo: { x: number; y: number };
   }) {
-    this.animal = moveAnimalTo({
+    this.animal = computeNextSpine({
       animal,
       x: goTo.x,
       y: goTo.y,
