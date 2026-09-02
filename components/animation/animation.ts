@@ -45,30 +45,17 @@ export const moveAnimalTo = ({
 
     const theoreticalDistanceWithPreviousNode = previousNode.size;
 
-    const currentDistanceWithPreviousNode = Math.sqrt(
-      (previousNode.x - currentNode.x) ** 2 +
-        (previousNode.y - currentNode.y) ** 2
-    );
-
     const theta = Math.atan2(
       currentNode.y - previousNode.y,
       currentNode.x - previousNode.x
     );
 
-    if (
-      currentDistanceWithPreviousNode !== theoreticalDistanceWithPreviousNode
-    ) {
       newSpine[index] = {
-        x:
-          Math.cos(theta) * theoreticalDistanceWithPreviousNode +
-          previousNode.x,
-        y:
-          Math.sin(theta) * theoreticalDistanceWithPreviousNode +
-          previousNode.y,
+      x: Math.cos(theta) * theoreticalDistanceWithPreviousNode + previousNode.x,
+      y: Math.sin(theta) * theoreticalDistanceWithPreviousNode + previousNode.y,
         size: currentNode.size,
         displayedSize: currentNode.displayedSize,
       };
-    }
   }
 
   return {
