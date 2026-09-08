@@ -51,10 +51,9 @@ export const computeNextSpine = ({
     );
 
       newSpine[index] = {
+      ...currentNode,
       x: Math.cos(theta) * theoreticalDistanceWithPreviousNode + previousNode.x,
       y: Math.sin(theta) * theoreticalDistanceWithPreviousNode + previousNode.y,
-        size: currentNode.size,
-        displayedSize: currentNode.displayedSize,
       };
   }
 
