@@ -13,8 +13,6 @@ type Props = {
 
 export const BASE_NODE_SIZE = 12;
 
-export const BASE_NODE_STROKE = 4;
-
 const SvgCircleNode = ({ size = BASE_NODE_SIZE }: Props) => {
   return (
     <Svg height={size * 2} width={size * 2} viewBox="0 0 100 100">
