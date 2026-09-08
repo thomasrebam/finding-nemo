@@ -16,7 +16,7 @@ export const BASE_NODE_SIZE = 12;
 const SvgCircleNode = ({ size = BASE_NODE_SIZE }: Props) => {
   return (
     <Svg height={size * 2} width={size * 2} viewBox="0 0 100 100">
-      <Circle cx="50" cy="50" r="50" fill="green" />
+      <Circle cx="50" cy="50" r="50" fill="#ed5c26" />
     </Svg>
   );
 };
