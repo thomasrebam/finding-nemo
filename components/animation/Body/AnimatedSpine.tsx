@@ -26,7 +26,7 @@ const AnimatedSpineNode = ({
   size,
 }: {
   index: number;
-  size?: number;
+  size: number;
 }) => {
   const x = useSharedValue(0);
   const y = useSharedValue(0);
@@ -43,7 +43,7 @@ const AnimatedSpineNode = ({
 
   const animatedStyle = useAnimatedStyle(() => ({
     position: "absolute",
-    transform: [{ translateX: x.value }, { translateY: y.value }],
+    transform: [{ translateX: x.value - size }, { translateY: y.value - size }],
   }));
 
   return (
