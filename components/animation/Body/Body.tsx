@@ -4,14 +4,12 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
-  withSpring,
 } from "react-native-reanimated";
 
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useRef } from "react";
 import { Animal } from "../animation";
 import { PositionService } from "./PositionService";
 import { RedrawFishBody } from "./RedrawFishBody";
-import { RNSVGNode } from "./RNSVGNode";
 
 type Props = {
   animal: Animal;
@@ -69,31 +67,5 @@ export const Body = ({ animal }: Props) => {
         <Animated.View style={pointerAnimatedStyles} />
       </GestureDetector>
     </Fragment>
-  );
-};
-
-const AnimatedNode = ({ index, size }: { index: number; size?: number }) => {
-  const x = useSharedValue(0);
-  const y = useSharedValue(0);
-
-  useEffect(() => {
-    const removeListener = PositionService.subscribe((positions) => {
-      if (positions[index]) {
-        x.value = withSpring(positions[index].x, { duration: 100 });
-        y.value = withSpring(positions[index].y, { duration: 100 });
-      }
-    });
-    return () => removeListener();
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    position: "absolute",
-    transform: [{ translateX: x.value }, { translateY: y.value }],
-  }));
-
-  return (
-    <Animated.View style={animatedStyle}>
-      <RNSVGNode size={size} />
-    </Animated.View>
   );
 };
