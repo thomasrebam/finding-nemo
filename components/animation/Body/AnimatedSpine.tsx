@@ -15,7 +15,7 @@ export const BASE_NODE_SIZE = 12;
 
 export const BASE_NODE_STROKE = 4;
 
-export const RNSVGNode = ({ size = BASE_NODE_SIZE }: Props) => {
+const SvgCircleNode = ({ size = BASE_NODE_SIZE }: Props) => {
   return (
     <Svg height={size * 2} width={size * 2} viewBox="0 0 100 100">
       <Circle cx="50" cy="50" r="50" fill="green" />
@@ -23,15 +23,21 @@ export const RNSVGNode = ({ size = BASE_NODE_SIZE }: Props) => {
   );
 };
 
-const AnimatedNode = ({ index, size }: { index: number; size?: number }) => {
+const AnimatedSpineNode = ({
+  index,
+  size,
+}: {
+  index: number;
+  size?: number;
+}) => {
   const x = useSharedValue(0);
   const y = useSharedValue(0);
 
   useEffect(() => {
     const removeListener = PositionService.subscribe((positions) => {
       if (positions[index]) {
-        x.value = withSpring(positions[index].x, { duration: 100 });
-        y.value = withSpring(positions[index].y, { duration: 100 });
+        x.value = withSpring(positions[index].x);
+        y.value = withSpring(positions[index].y);
       }
     });
     return () => removeListener();
@@ -44,7 +50,23 @@ const AnimatedNode = ({ index, size }: { index: number; size?: number }) => {
 
   return (
     <Animated.View style={animatedStyle}>
-      <RNSVGNode size={size} />
+      <SvgCircleNode size={size} />
     </Animated.View>
+  );
+};
+
+const NODES = [12, 10, 8, 6, 4, 2, 1];
+
+export const AnimatedSpine = () => {
+  return (
+    <>
+      {NODES.map((size, index) => (
+        <AnimatedSpineNode
+          key={`spine-node-${index}`}
+          index={index}
+          size={size}
+        />
+      ))}
+    </>
   );
 };
