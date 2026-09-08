@@ -22,6 +22,7 @@ export const computeNextSpine = ({
   x: number;
   y: number;
 }) => {
+  "worklet";
   const oldSpine = [...animal.spine];
   const newSpine = [...animal.spine];
 
@@ -50,11 +51,11 @@ export const computeNextSpine = ({
       currentNode.x - previousNode.x
     );
 
-      newSpine[index] = {
+    newSpine[index] = {
       ...currentNode,
       x: Math.cos(theta) * theoreticalDistanceWithPreviousNode + previousNode.x,
       y: Math.sin(theta) * theoreticalDistanceWithPreviousNode + previousNode.y,
-      };
+    };
   }
 
   return {

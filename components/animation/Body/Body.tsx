@@ -1,15 +1,15 @@
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
 } from "react-native-reanimated";
+import { runOnJS } from "react-native-worklets";
 
-import { Fragment, useRef } from "react";
-import { Animal } from "../animation";
+import { Fragment } from "react";
+import { Animal, computeNextSpine } from "../animation";
+import { AnimatedSpine } from "./AnimatedSpine";
 import { PositionService } from "./PositionService";
-import { RedrawFishBody } from "./RedrawFishBody";
 
 type Props = {
   animal: Animal;
@@ -22,7 +22,7 @@ export const Body = ({ animal }: Props) => {
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
 
-  const animalRef = useRef<Animal>(animal);
+  const spine = useSharedValue(animal.spine);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
@@ -33,6 +33,12 @@ export const Body = ({ animal }: Props) => {
       "worklet";
       pointerX.value = e.translationX + offsetX.value;
       pointerY.value = e.translationY + offsetY.value;
+
+      spine.value = computeNextSpine({
+        animal: { spine: spine.value },
+        x: pointerX.value,
+        y: pointerY.value,
+      }).spine;
     })
     .hitSlop(48);
 
@@ -47,22 +53,22 @@ export const Body = ({ animal }: Props) => {
     zIndex: 1000,
   }));
 
-  const updatePositionService = (x: number, y: number) => {
-    const newAnimal = PositionService.setPositions({
-      animal: animalRef.current,
-      goTo: { x, y },
-    });
-
-    animalRef.current = newAnimal;
+  const publishSpine = (positions: Animal["spine"]) => {
+    PositionService.publish(positions);
   };
 
-  useDerivedValue(() => {
-    runOnJS(updatePositionService)(pointerX.value, pointerY.value);
-  });
+  // Forwards the UI-thread-computed spine to JS-thread-only consumers, e.g.
+  // RedrawFishBody's canvas render loop, which can't read shared values directly.
+  useAnimatedReaction(
+    () => spine.value,
+    (current) => {
+      runOnJS(publishSpine)(current);
+    }
+  );
 
   return (
     <Fragment>
-      <RedrawFishBody />
+      <AnimatedSpine />
       <GestureDetector gesture={gesture}>
         <Animated.View style={pointerAnimatedStyles} />
       </GestureDetector>
