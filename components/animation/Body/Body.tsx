@@ -16,8 +16,8 @@ type Props = {
 };
 
 export const Body = ({ animal }: Props) => {
-  const pointerX = useSharedValue(0);
-  const pointerY = useSharedValue(0);
+  const pointerX = useSharedValue(200);
+  const pointerY = useSharedValue(200);
 
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
