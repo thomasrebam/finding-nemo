@@ -1,3 +1,4 @@
+import { NemoColors } from "@/constants/Colors";
 import {
   Canvas,
   Circle,
@@ -33,7 +34,12 @@ export const SkiaFishBody = ({
       >
         <Group>
           {/* Fish body */}
-          <Path path={fishPath} color="#2E5A8A" style="fill" opacity={1} />
+          <Path
+            path={fishPath}
+            color={NemoColors.orange}
+            style="fill"
+            opacity={1}
+          />
 
           {/* Eyes */}
           <Circle
