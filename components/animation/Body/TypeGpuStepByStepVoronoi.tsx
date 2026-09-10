@@ -50,10 +50,17 @@ const VoronoiCanvas = () => {
           const centered = uv.sub(d.vec2f(0.5, 0.5)).mul(2);
           const p = d.vec2f(centered.x * aspectRatio, centered.y);
 
-          let minDist = d.f32(999999);
+          // Closest and second-closest cell centers (point + distance): the
+          // border between two cells is the perpendicular bisector of the
+          // segment joining their centers.
+          let minDist1 = d.f32(999999);
+          let minDist2 = d.f32(999999);
+          let closestPoint = d.vec2f(0, 0);
+          let secondPoint = d.vec2f(0, 0);
           let col = d.vec3f(0, 0, 0);
           let onCenter = false;
           const centerRadius = 0.02;
+          const borderWidth = 0.01;
 
           for (let i = 0; i < CELL_COUNT; i++) {
             const n = n22(d.vec2f(d.f32(i), d.f32(i)));
@@ -64,8 +71,11 @@ const VoronoiCanvas = () => {
             const dist = std.length(point.sub(p));
             if (dist < centerRadius) onCenter = true;
 
-            if (dist < minDist) {
-              minDist = dist;
+            if (dist < minDist1) {
+              minDist2 = minDist1;
+              secondPoint = d.vec2f(closestPoint);
+              minDist1 = dist;
+              closestPoint = d.vec2f(point);
 
               if (i === 0) col = d.vec3f(0.9, 0.2, 0.2);
               else if (i === 1) col = d.vec3f(0.2, 0.7, 0.9);
@@ -77,10 +87,21 @@ const VoronoiCanvas = () => {
               else if (i === 7) col = d.vec3f(0.9, 0.2, 0.6);
               else if (i === 8) col = d.vec3f(0.5, 0.9, 0.2);
               else col = d.vec3f(0.4, 0.4, 0.9);
+            } else if (dist < minDist2) {
+              minDist2 = dist;
+              secondPoint = d.vec2f(point);
             }
           }
 
-          // Mark each cell's center point with a small black dot.
+          // Perpendicular distance from p to the true bisector line between
+          // the two nearest centers - constant-width regardless of how far p
+          // is from either center (unlike the raw minDist2 - minDist1 gap).
+          const cellSpacing = std.length(secondPoint.sub(closestPoint));
+          const edgeDist =
+            (minDist2 * minDist2 - minDist1 * minDist1) / (2 * cellSpacing);
+          if (edgeDist < borderWidth) col = d.vec3f(0, 0, 0);
+
+          // Then the center dots on top.
           if (onCenter) col = d.vec3f(0, 0, 0);
 
           return d.vec4f(col.x, col.y, col.z, 1);
