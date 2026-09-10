@@ -32,19 +32,12 @@ export const SkiaFishBody = ({
           />
 
           {/* Eyes */}
-          <Circle cx={topEyeX} cy={topEyeY} r={3} color={NemoColors.black} />
-          <Circle cx={topEyeX} cy={topEyeY} r={2} color={NemoColors.orange} />
-          <Circle
-            cx={bottomEyeX}
-            cy={bottomEyeY}
-            r={3}
-            color={NemoColors.black}
-          />
+          <Circle cx={topEyeX} cy={topEyeY} r={2} color={NemoColors.black} />
           <Circle
             cx={bottomEyeX}
             cy={bottomEyeY}
             r={2}
-            color={NemoColors.orange}
+            color={NemoColors.black}
           />
         </Group>
       </Canvas>
@@ -145,16 +138,16 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
 
     // Add left fin
     if (leftSidePoints.length > 1) {
-      const middleIndex = Math.floor(leftSidePoints.length / 2) + 1;
+      const middleIndex = Math.floor(leftSidePoints.length / 2) + 2;
       const middlePoint = leftSidePoints[middleIndex];
       const angle = Math.atan2(
         leftSidePoints[middleIndex + 1].x - leftSidePoints[middleIndex - 1].x,
         leftSidePoints[middleIndex + 1].y - leftSidePoints[middleIndex - 1].y
       );
-      const offsetX1 = (Math.cos(-angle - Math.PI / 2.5) * 15) / 2;
-      const offsetY1 = (Math.sin(-angle - Math.PI / 2.5) * 15) / 2;
-      const offsetX2 = (Math.cos(-angle - Math.PI / 6) * 5) / 2;
-      const offsetY2 = (Math.sin(-angle - Math.PI / 6) * 5) / 2;
+      const offsetX1 = (Math.cos(-angle - Math.PI / 6) * 30) / 2;
+      const offsetY1 = (Math.sin(-angle - Math.PI / 6) * 30) / 2;
+      const offsetX2 = (Math.cos(-angle + Math.PI / 12) * 15) / 2;
+      const offsetY2 = (Math.sin(-angle + Math.PI / 12) * 15) / 2;
       leftSidePoints.splice(middleIndex, 0, {
         x: middlePoint.x - offsetX1,
         y: middlePoint.y - offsetY1,
@@ -171,10 +164,10 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
         leftSidePoints[baseIndex + 1].x - leftSidePoints[baseIndex - 1].x,
         leftSidePoints[baseIndex + 1].y - leftSidePoints[baseIndex - 1].y
       );
-      const offsetX2 = (Math.cos(-angle - Math.PI / 6) * 10) / 2;
-      const offsetY2 = (Math.sin(-angle - Math.PI / 6) * 10) / 2;
-      const offsetX3 = (Math.cos(-angle - Math.PI / 8) * 30) / 2;
-      const offsetY3 = (Math.sin(-angle - Math.PI / 8) * 30) / 2;
+      const offsetX2 = (Math.cos(-angle - Math.PI / 4) * 40) / 2;
+      const offsetY2 = (Math.sin(-angle - Math.PI / 4) * 40) / 2;
+      const offsetX3 = (Math.cos(-angle) * 30) / 2;
+      const offsetY3 = (Math.sin(-angle) * 30) / 2;
       leftSidePoints.splice(baseIndex, 0, {
         x: middlePoint.x - offsetX2,
         y: middlePoint.y - offsetY2,
@@ -187,23 +180,23 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
 
     // Add right fin
     if (rightSidePoints.length > 1) {
-      const middleIndex = Math.floor(rightSidePoints.length / 2) + 1;
+      const middleIndex = Math.floor(rightSidePoints.length / 2) + 2;
       const middlePoint = rightSidePoints[middleIndex];
       const angle = Math.atan2(
         rightSidePoints[middleIndex - 1].x - rightSidePoints[middleIndex + 1].x,
         rightSidePoints[middleIndex - 1].y - rightSidePoints[middleIndex + 1].y
       );
-      const offsetX1 = (Math.cos(-angle + Math.PI / 2.5) * 15) / 2;
-      const offsetY1 = (Math.sin(-angle + Math.PI / 2.5) * 15) / 2;
-      const offsetX2 = (Math.cos(-angle + Math.PI / 6) * 5) / 2;
-      const offsetY2 = (Math.sin(-angle + Math.PI / 6) * 5) / 2;
-      rightSidePoints.splice(middleIndex, 0, {
-        x: middlePoint.x - offsetX2,
-        y: middlePoint.y - offsetY2,
-      });
+      const offsetX1 = (Math.cos(-angle + Math.PI / 6) * 30) / 2;
+      const offsetY1 = (Math.sin(-angle + Math.PI / 6) * 30) / 2;
+      const offsetX2 = (Math.cos(-angle - Math.PI / 12) * 15) / 2;
+      const offsetY2 = (Math.sin(-angle - Math.PI / 12) * 15) / 2;
       rightSidePoints.splice(middleIndex, 0, {
         x: middlePoint.x - offsetX1,
         y: middlePoint.y - offsetY1,
+      });
+      rightSidePoints.splice(middleIndex, 0, {
+        x: middlePoint.x - offsetX2,
+        y: middlePoint.y - offsetY2,
       });
     }
     if (rightSidePoints.length > 4) {
@@ -213,10 +206,10 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
         rightSidePoints[baseIndex - 1].x - rightSidePoints[baseIndex + 1].x,
         rightSidePoints[baseIndex - 1].y - rightSidePoints[baseIndex + 1].y
       );
-      const offsetX2 = (Math.cos(-angle + Math.PI / 6) * 10) / 2;
-      const offsetY2 = (Math.sin(-angle + Math.PI / 6) * 10) / 2;
-      const offsetX3 = (Math.cos(-angle + Math.PI / 8) * 30) / 2;
-      const offsetY3 = (Math.sin(-angle + Math.PI / 8) * 30) / 2;
+      const offsetX2 = (Math.cos(-angle + Math.PI / 4) * 40) / 2;
+      const offsetY2 = (Math.sin(-angle + Math.PI / 4) * 40) / 2;
+      const offsetX3 = (Math.cos(-angle) * 30) / 2;
+      const offsetY3 = (Math.sin(-angle) * 30) / 2;
       rightSidePoints.splice(baseIndex, 0, {
         x: middlePoint.x - offsetX2,
         y: middlePoint.y - offsetY2,
