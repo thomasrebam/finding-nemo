@@ -8,33 +8,20 @@ import {
   Skia,
   useClock,
 } from "@shopify/react-native-skia";
-import { useEffect } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
-import {
-  SharedValue,
-  useDerivedValue,
-  useSharedValue,
-} from "react-native-reanimated";
+import { SharedValue, useDerivedValue } from "react-native-reanimated";
 import { AnimalNode } from "../animation";
-import { PositionService } from "./PositionService";
 import { TypeGpuVoronoiBackground } from "./TypeGpuVoronoiBackground";
 
-export const SkiaFishBody = () => {
-  const spinePositions = useSharedValue<AnimalNode[]>([]);
-
-  // Subscribe to position service
-  useEffect(() => {
-    const removeListener = PositionService.subscribe((positions) => {
-      spinePositions.value = positions;
-    });
-    return () => removeListener();
-  }, []);
-
-  const { fishPath } = useFishPath(spinePositions);
+export const SkiaFishBody = ({
+  spine,
+}: {
+  spine: SharedValue<AnimalNode[]>;
+}) => {
+  const { fishPath } = useFishPath(spine);
 
   // Create separate derived values for each eye coordinate
-  const { topEyeX, topEyeY, bottomEyeX, bottomEyeY } =
-    useEyesValues(spinePositions);
+  const { topEyeX, topEyeY, bottomEyeX, bottomEyeY } = useEyesValues(spine);
 
   return (
     <View style={StyleSheet.absoluteFill}>
