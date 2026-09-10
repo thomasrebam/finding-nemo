@@ -153,7 +153,7 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
     // Build SVG path string with smooth curves for ALL points
     let pathString = `M ${leftSidePoints[0].x} ${leftSidePoints[0].y}`;
 
-    // Add top fin
+    // Add left fin
     if (leftSidePoints.length > 1) {
       const middleIndex = Math.floor(leftSidePoints.length / 2) + 1;
       const middlePoint = leftSidePoints[middleIndex];
@@ -195,7 +195,7 @@ const useFishPath = (spinePositions: SharedValue<AnimalNode[]>) => {
       });
     }
 
-    // Add bottom fin
+    // Add right fin
     if (rightSidePoints.length > 1) {
       const middleIndex = Math.floor(rightSidePoints.length / 2) + 1;
       const middlePoint = rightSidePoints[middleIndex];
