@@ -56,8 +56,6 @@ const VoronoiCanvas = () => {
           let minDist1 = d.f32(999999);
           let minDist2 = d.f32(999999);
           let col = d.vec3f(0, 0, 0);
-          let onCenter = false;
-          const centerRadius = 0.02;
           const borderWidth = 0.02;
 
           for (let i = 0; i < CELL_COUNT; i++) {
@@ -67,22 +65,12 @@ const VoronoiCanvas = () => {
             point = d.vec2f(point.x * aspectRatio, point.y);
 
             const dist = std.length(point.sub(p));
-            if (dist < centerRadius) onCenter = true;
 
             if (dist < minDist1) {
               minDist2 = minDist1;
               minDist1 = dist;
 
-              if (i === 0) col = d.vec3f(0.9, 0.2, 0.2);
-              else if (i === 1) col = d.vec3f(0.2, 0.7, 0.9);
-              else if (i === 2) col = d.vec3f(0.2, 0.9, 0.3);
-              else if (i === 3) col = d.vec3f(0.9, 0.8, 0.2);
-              else if (i === 4) col = d.vec3f(0.7, 0.2, 0.9);
-              else if (i === 5) col = d.vec3f(0.9, 0.5, 0.2);
-              else if (i === 6) col = d.vec3f(0.2, 0.9, 0.8);
-              else if (i === 7) col = d.vec3f(0.9, 0.2, 0.6);
-              else if (i === 8) col = d.vec3f(0.5, 0.9, 0.2);
-              else col = d.vec3f(0.4, 0.4, 0.9);
+              col = d.vec3f(0.50390625, 0.859375, 0.87890625);
             } else if (dist < minDist2) {
               minDist2 = dist;
             }
@@ -102,10 +90,7 @@ const VoronoiCanvas = () => {
               borderWidth + aaWidth,
               edgeDist
             );
-          col = std.mix(col, d.vec3f(0, 0, 0), borderMask);
-
-          // Then the center dots on top.
-          if (onCenter) col = d.vec3f(0, 0, 0);
+          col = std.mix(col, d.vec3f(1, 1, 1), borderMask);
 
           return d.vec4f(col.x, col.y, col.z, 1);
         },
