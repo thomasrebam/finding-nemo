@@ -44,7 +44,10 @@ export const Body = ({ animal }: Props) => {
 
   const pointerAnimatedStyles = useAnimatedStyle(() => ({
     position: "absolute",
-    transform: [{ translateX: pointerX.value }, { translateY: pointerY.value }],
+    transform: [
+      { translateX: pointerX.value - 24 },
+      { translateY: pointerY.value - 24 },
+    ],
     backgroundColor: "blue",
     opacity: 0.2,
     width: 48,
