@@ -11,7 +11,6 @@ import {
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { SharedValue, useDerivedValue } from "react-native-reanimated";
 import { AnimalNode } from "../animation";
-import { TypeGpuVoronoiBackground } from "./TypeGpuVoronoiBackground";
 
 export const SkiaFishBody = ({
   spine,
@@ -53,7 +52,6 @@ export const SkiaFishBody = ({
           />
         </Group>
       </Canvas>
-      <TypeGpuVoronoiBackground />
     </View>
   );
 };

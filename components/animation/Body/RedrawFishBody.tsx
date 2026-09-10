@@ -69,7 +69,6 @@ export const RedrawFishBody = () => {
           render={render}
         />
       </RedrawProvider>
-      {/* <TypeGpuVoronoiBackground /> */}
     </View>
   );
 };
