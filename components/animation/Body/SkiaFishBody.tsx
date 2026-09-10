@@ -42,19 +42,19 @@ export const SkiaFishBody = ({
           />
 
           {/* Eyes */}
-          <Circle
-            cx={topEyeX}
-            cy={topEyeY}
-            r={3}
-            color="#000000"
-            opacity={0.5}
-          />
+          <Circle cx={topEyeX} cy={topEyeY} r={3} color={NemoColors.black} />
+          <Circle cx={topEyeX} cy={topEyeY} r={2} color={NemoColors.orange} />
           <Circle
             cx={bottomEyeX}
             cy={bottomEyeY}
             r={3}
-            color="#000000"
-            opacity={0.5}
+            color={NemoColors.black}
+          />
+          <Circle
+            cx={bottomEyeX}
+            cy={bottomEyeY}
+            r={2}
+            color={NemoColors.orange}
           />
         </Group>
       </Canvas>
