@@ -50,17 +50,15 @@ const VoronoiCanvas = () => {
           const centered = uv.sub(d.vec2f(0.5, 0.5)).mul(2);
           const p = d.vec2f(centered.x * aspectRatio, centered.y);
 
-          // Closest and second-closest cell centers (point + distance): the
-          // border between two cells is the perpendicular bisector of the
-          // segment joining their centers.
+          // Distances to the closest and second-closest cell centers: the
+          // border between two cells is where these two distances are
+          // (almost) equal, i.e. where their difference is near zero.
           let minDist1 = d.f32(999999);
           let minDist2 = d.f32(999999);
-          let closestPoint = d.vec2f(0, 0);
-          let secondPoint = d.vec2f(0, 0);
           let col = d.vec3f(0, 0, 0);
           let onCenter = false;
           const centerRadius = 0.02;
-          const borderWidth = 0.01;
+          const borderWidth = 0.02;
 
           for (let i = 0; i < CELL_COUNT; i++) {
             const n = n22(d.vec2f(d.f32(i), d.f32(i)));
@@ -73,9 +71,7 @@ const VoronoiCanvas = () => {
 
             if (dist < minDist1) {
               minDist2 = minDist1;
-              secondPoint = d.vec2f(closestPoint);
               minDist1 = dist;
-              closestPoint = d.vec2f(point);
 
               if (i === 0) col = d.vec3f(0.9, 0.2, 0.2);
               else if (i === 1) col = d.vec3f(0.2, 0.7, 0.9);
@@ -89,17 +85,24 @@ const VoronoiCanvas = () => {
               else col = d.vec3f(0.4, 0.4, 0.9);
             } else if (dist < minDist2) {
               minDist2 = dist;
-              secondPoint = d.vec2f(point);
             }
           }
 
-          // Perpendicular distance from p to the true bisector line between
-          // the two nearest centers - constant-width regardless of how far p
-          // is from either center (unlike the raw minDist2 - minDist1 gap).
-          const cellSpacing = std.length(secondPoint.sub(closestPoint));
+          // Draw a black border wherever the two closest cells are near
+          // equidistant, anti-aliased over a small transition band instead
+          // of a hard on/off cutoff so it doesn't look jagged.
           const edgeDist =
-            (minDist2 * minDist2 - minDist1 * minDist1) / (2 * cellSpacing);
-          if (edgeDist < borderWidth) col = d.vec3f(0, 0, 0);
+            (minDist2 - minDist1) /
+            std.sqrt(std.pow(minDist2, 2) + std.pow(minDist1, 2));
+          const aaWidth = 0.004;
+          const borderMask =
+            1 -
+            std.smoothstep(
+              borderWidth - aaWidth,
+              borderWidth + aaWidth,
+              edgeDist
+            );
+          col = std.mix(col, d.vec3f(0, 0, 0), borderMask);
 
           // Then the center dots on top.
           if (onCenter) col = d.vec3f(0, 0, 0);
