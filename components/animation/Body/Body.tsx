@@ -4,12 +4,12 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { runOnJS } from "react-native-worklets";
 
 import { Fragment } from "react";
+import { runOnJS } from "react-native-worklets";
 import { Animal, computeNextSpine } from "../animation";
-import { AnimatedSpine } from "./AnimatedSpine";
 import { PositionService } from "./PositionService";
+import { SkiaFishBody } from "./SkiaFishBody";
 
 type Props = {
   animal: Animal;
@@ -71,7 +71,7 @@ export const Body = ({ animal }: Props) => {
 
   return (
     <Fragment>
-      <AnimatedSpine />
+      <SkiaFishBody spine={spine} />
       <GestureDetector gesture={gesture}>
         <Animated.View style={pointerAnimatedStyles} />
       </GestureDetector>
