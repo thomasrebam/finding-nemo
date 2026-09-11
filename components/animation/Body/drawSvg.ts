@@ -1,6 +1,7 @@
 import { AnimalNode } from "../animation";
 
 export const buildFishPathString = (spineNodes: AnimalNode[]): string => {
+  "worklet";
   if (spineNodes.length < 2) return "M 0 0";
 
   // Create offset points for top and bottom of fish
@@ -203,6 +204,7 @@ export const buildFishPathString = (spineNodes: AnimalNode[]): string => {
 };
 
 export const computeEyePositions = (spineNodes: AnimalNode[]) => {
+  "worklet";
   const headNode = spineNodes[0];
   const next = spineNodes[1];
   const angle = Math.atan2(next.y - headNode.y, next.x - headNode.x);

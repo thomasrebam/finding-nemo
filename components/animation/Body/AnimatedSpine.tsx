@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { NemoColors } from "@/constants/Colors";
 import Animated, {
+  SharedValue,
   useAnimatedStyle,
-  useSharedValue,
-  withSpring,
+  useDerivedValue,
 } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
-import { PositionService } from "./PositionService";
+import { AnimalNode } from "../animation";
 
 type Props = {
   size?: number;
@@ -16,53 +16,50 @@ export const BASE_NODE_SIZE = 12;
 const SvgCircleNode = ({ size = BASE_NODE_SIZE }: Props) => {
   return (
     <Svg height={size * 2} width={size * 2} viewBox="0 0 100 100">
-      <Circle cx="50" cy="50" r="50" fill="#ed5c26" />
+      <Circle cx="50" cy="50" r="50" fill={NemoColors.orange} />
     </Svg>
   );
 };
 
 const AnimatedSpineNode = ({
   index,
-  size,
+  spine,
 }: {
   index: number;
-  size: number;
+  spine: SharedValue<AnimalNode[]>;
 }) => {
-  const x = useSharedValue(0);
-  const y = useSharedValue(0);
-
-  useEffect(() => {
-    const removeListener = PositionService.subscribe((positions) => {
-      if (positions[index]) {
-        x.value = withSpring(positions[index].x);
-        y.value = withSpring(positions[index].y);
-      }
-    });
-    return () => removeListener();
-  }, []);
+  const node = useDerivedValue(() => spine.value[index]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     position: "absolute",
-    transform: [{ translateX: x.value - size }, { translateY: y.value - size }],
+    transform: [
+      { translateX: node.value.x - node.value.displayedSize },
+      { translateY: node.value.y - node.value.displayedSize },
+    ],
   }));
 
   return (
     <Animated.View style={animatedStyle}>
-      <SvgCircleNode size={size} />
+      <SvgCircleNode size={node.value.displayedSize} />
     </Animated.View>
   );
 };
 
 const NODES = [12, 10, 8, 6, 4, 2, 1];
 
-export const AnimatedSpine = () => {
+export const AnimatedSpine = ({
+  spine,
+}: {
+  spine: SharedValue<AnimalNode[]>;
+}) => {
+  const nodes = useDerivedValue(() => spine.value);
   return (
     <>
-      {NODES.map((size, index) => (
+      {nodes.value.map((_, index) => (
         <AnimatedSpineNode
           key={`spine-node-${index}`}
           index={index}
-          size={size}
+          spine={spine}
         />
       ))}
     </>

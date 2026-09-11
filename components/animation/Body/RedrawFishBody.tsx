@@ -1,3 +1,4 @@
+import { NemoColors } from "@/constants/Colors";
 import { useCallback, useEffect, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import {
@@ -5,10 +6,15 @@ import {
   RedrawProvider,
   RenderCallback,
 } from "react-native-redraw";
-import { Circle, LinearGradient, Paint, parseSVG } from "redraw";
+import { Circle, Paint, parseSVG } from "redraw";
 import { AnimalNode } from "../animation";
 import { PositionService } from "./PositionService";
+import { SpineGradient } from "./SpineGradient";
 import { buildFishPathString, computeEyePositions } from "./drawSvg";
+
+// Registers the custom SpineGradient shader with the canvas's Library.
+// Module-level so it stays referentially stable across renders.
+const REDRAW_LIBRARY = { functions: [SpineGradient.fn] };
 
 export const RedrawFishBody = () => {
   const spinePositionsRef = useRef<AnimalNode[]>([]);
@@ -23,19 +29,16 @@ export const RedrawFishBody = () => {
     return () => removeListener();
   }, []);
 
-  // GradientAlongPath shades by ctx.t, which only exists on stroked paths
-  // (a fill reports ctx.t = 0, i.e. a flat color) - LinearGradient shades by
-  // position instead, so it actually paints on the filled body. Pointing its
-  // live from/to at the head and tail every frame keeps the axis following
-  // the spine instead of a fixed screen direction.
+  // SpineGradient shades each fragment by the palette stop nearest its
+  // closest point on the spine polyline (updated live every frame), so
+  // stripes follow the spine's actual curvature instead of a fixed axis.
   const bodyGradient = useRef(
-    new LinearGradient([
-      "#ed5c26",
-      "#ffffff",
-      "#ed5c26",
-      "#ffffff",
-      "#ed5c26",
-      "#ffffff",
+    new SpineGradient([
+      NemoColors.orange,
+      NemoColors.white,
+      NemoColors.orange,
+      NemoColors.white,
+      NemoColors.orange,
     ])
   ).current;
   const bodyPaint = useRef(new Paint().addShader(bodyGradient)).current;
@@ -46,10 +49,7 @@ export const RedrawFishBody = () => {
       const spineNodes = spinePositionsRef.current;
       if (spineNodes.length < 2) return;
 
-      const head = spineNodes[0];
-      const tail = spineNodes[spineNodes.length - 1];
-      bodyGradient.from = [head.x, head.y];
-      bodyGradient.to = [tail.x, tail.y];
+      bodyGradient.setSpine(spineNodes);
 
       const fishPath = parseSVG(buildFishPathString(spineNodes));
       canvas.drawPath(fishPath, bodyPaint);
@@ -68,10 +68,13 @@ export const RedrawFishBody = () => {
         <RedrawCanvas
           style={{ width: "100%", height: "100%" }}
           render={render}
+          library={REDRAW_LIBRARY}
         />
       </RedrawProvider>
     </View>
   );
 };
 
-
+// Question Zyad : Skia est déjà censé être très low level -> en effet ça tape déjà sur le GPU
+// Quel est le vrai intérêt de redraw dans tout ça ?
+// Idem entre redraw et typeGpu, quel intérêt de redraw

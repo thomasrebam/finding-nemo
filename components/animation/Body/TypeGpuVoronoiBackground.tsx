@@ -66,10 +66,18 @@ const VoronoiCanvas = () => {
             }
           }
 
-          const col = d
-            .vec3f(0.01, 0.53, 0.87)
-            .mul(1.4 + m)
-            .add(d.vec3f(1.7, 0, 0).mul(m));
+          const threshold = 0.3;
+          const edgeWidth = 0.02;
+          const blend = std.smoothstep(
+            threshold - edgeWidth,
+            threshold + edgeWidth,
+            m
+          );
+          const col = std.mix(
+            d.vec3f(0.01, 0.53, 0.87),
+            d.vec3f(1, 1, 1),
+            blend
+          );
           return d.vec4f(col.x, col.y, col.z, 1);
         },
       }),

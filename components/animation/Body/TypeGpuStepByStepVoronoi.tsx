@@ -58,6 +58,7 @@ const VoronoiCanvas = ({
   const iResolution = useUniform(d.vec3f, {
     initial: d.vec3f(width, height, 1),
   });
+  const iTime = useUniform(d.f32);
 
   const root = useRoot();
   const renderPipeline = useMemo(
@@ -67,6 +68,7 @@ const VoronoiCanvas = ({
         fragment: ({ uv }) => {
           "use gpu";
           const resolution = iResolution.$;
+          const t = iTime.$;
           const aspectRatio = resolution.x / resolution.y;
           // Center uv at (0,0) and scale to [-1, 1] on the shorter axis,
           // so screen space and cell-point space line up 1:1.
@@ -95,8 +97,9 @@ const VoronoiCanvas = ({
           for (let i = 0; i < CELL_COUNT; i++) {
             const seeded = d.f32(i + seedOffset);
             const n = n22(d.vec2f(seeded, seeded));
-            // Fixed pseudo-random point in [-1, 1], not driven by time.
-            let point = n.sub(d.vec2f(0.5, 0.5)).mul(2);
+            // Each cell drifts smoothly in [-1, 1] over time - n picks a
+            // different phase/frequency per cell so they don't move in sync.
+            let point = std.sin(n.mul(t / 2000 + 10));
             point = d.vec2f(point.x * aspectRatio, point.y);
 
             const dist = std.length(point.sub(warpedP));
@@ -155,14 +158,15 @@ const VoronoiCanvas = ({
           return d.vec4f(col.x * alpha, col.y * alpha, col.z * alpha, alpha);
         },
       }),
-    [root, iResolution]
+    [root, iResolution, iTime]
   );
 
   const { ref, ctxRef } = useConfigureContext({ alphaMode: "premultiplied" });
 
-  useFrame(() => {
+  useFrame(({ elapsedSeconds }) => {
     if (!ctxRef.current) return;
 
+    iTime.write(elapsedSeconds * 1000);
     iResolution.write(d.vec3f(width, height, 1));
 
     renderPipeline.withColorAttachment({ view: ctxRef.current }).draw(3);

@@ -6,7 +6,6 @@ export const Nemo = () => {
       animal={{
         spine: [
           { x: 15, y: 15, size: 10, displayedSize: 10 },
-          { x: 30, y: 30, size: 12, displayedSize: 12 },
           { x: 45, y: 45, size: 10, displayedSize: 10 },
           { x: 60, y: 60, size: 9, displayedSize: 9 },
           { x: 75, y: 75, size: 8, displayedSize: 8 },
