@@ -33,19 +33,26 @@ export const RedrawFishBody = () => {
   // closest point on the spine polyline (updated live every frame), so
   // stripes follow the spine's actual curvature instead of a fixed axis.
   const bodyGradient = useRef(
-    new SpineGradient([
-      NemoColors.orange,
-      NemoColors.white,
-      NemoColors.orange,
-      NemoColors.white,
-      NemoColors.orange,
-    ])
+    new SpineGradient(
+      [
+        NemoColors.orange,
+        NemoColors.black,
+        NemoColors.white,
+        NemoColors.black,
+        NemoColors.orange,
+        NemoColors.black,
+        NemoColors.white,
+        NemoColors.black,
+        NemoColors.orange,
+      ],
+      [0, 0.08, 0.1, 0.22, 0.24, 0.5, 0.52, 0.56, 0.58]
+    )
   ).current;
   const bodyPaint = useRef(new Paint().addShader(bodyGradient)).current;
   const eyePaint = useRef(new Paint().setColor("rgba(0, 0, 0, 0.5)")).current;
 
   const render: RenderCallback = useCallback(
-    (canvas) => {
+    (canvas, info) => {
       const spineNodes = spinePositionsRef.current;
       if (spineNodes.length < 2) return;
 
