@@ -22,6 +22,7 @@
     "@typegpu/react": "^0.12.0",
     "expo": "^57.0.0",
     "expo-blur": "~57.0.2",
+    "expo-build-properties": "~57.0.17",
     "expo-constants": "~57.0.14",
     "expo-font": "~57.0.1",
     "expo-haptics": "~57.0.1",
@@ -37,6 +38,7 @@
     "react-native": "0.86.2",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-reanimated": "4.5.1",
+    "react-native-redraw": "file:./vendors/react-native-redraw-1.2.2.tgz",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
@@ -44,9 +46,8 @@
     "react-native-webgpu": "^0.8.4",
     "react-native-webview": "13.16.1",
     "react-native-worklets": "0.10.4",
-    "typegpu": "^0.12.3",
     "redraw": "file:./vendors/redraw-1.2.2.tgz",
-    "react-native-redraw": "file:./vendors/react-native-redraw-1.2.2.tgz"
+    "typegpu": "^0.12.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
