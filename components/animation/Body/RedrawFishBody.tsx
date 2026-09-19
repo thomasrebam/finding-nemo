@@ -1,6 +1,7 @@
 import { NemoColors } from "@/constants/Colors";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { StyleSheet, View } from "react-native";
+import { SharedValue } from "react-native-reanimated";
 import {
   RedrawCanvas,
   RedrawProvider,
@@ -8,7 +9,6 @@ import {
 } from "react-native-redraw";
 import { Circle, Feather, Paint, parseSVG } from "redraw";
 import { AnimalNode } from "../animation";
-import { PositionService } from "./PositionService";
 import { SpineGradient } from "./SpineGradient";
 import { buildFishPathString, computeEyePositions } from "./drawSvg";
 
@@ -24,20 +24,13 @@ const MOTION_BLUR_MAX_SIGMA = 0.5;
 // doesn't flicker on small frame-to-frame jitter in the spine follow.
 const MOTION_BLUR_VELOCITY_SMOOTHING = 0.1;
 
-export const RedrawFishBody = () => {
-  const spinePositionsRef = useRef<AnimalNode[]>([]);
+export const RedrawFishBody = ({
+  spine,
+}: {
+  spine: SharedValue<AnimalNode[]>;
+}) => {
   const prevHeadRef = useRef<{ x: number; y: number } | null>(null);
   const headVelocityRef = useRef({ x: 0, y: 0 });
-
-  // Subscribe to position service. The listener fires on the JS thread, same
-  // as RedrawCanvas's render loop, so a plain ref (read every frame below) is
-  // enough - no need for a cross-thread Reanimated shared value here.
-  useEffect(() => {
-    const removeListener = PositionService.subscribe((positions) => {
-      spinePositionsRef.current = positions;
-    });
-    return () => removeListener();
-  }, []);
 
   // SpineGradient shades each fragment by the palette stop nearest its
   // closest point on the spine polyline (updated live every frame), so
@@ -60,7 +53,7 @@ export const RedrawFishBody = () => {
     );
     const eyePaint = new Paint().setColor("rgba(0, 0, 0, 0.5)");
     const bodyPaint = new Paint().addShader(bodyGradient);
-    const spineNodes = spinePositionsRef.current;
+    const spineNodes = spine.value;
     if (spineNodes.length < 2) return;
 
     bodyGradient.setSpine(spineNodes);
