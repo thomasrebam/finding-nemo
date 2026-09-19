@@ -13,7 +13,7 @@ const Fishes = () => {
     <View style={{ flex: 1 }}>
       <TypeGpuStepByStepVoronoi
         CELL_COUNT={40}
-        borderColor={[0.08, 0.3, 0.55]}
+        borderColor={[0.40390625, 0.759375, 0.77890625]}
         seedOffset={100}
         fillOpacity={0.5}
       />

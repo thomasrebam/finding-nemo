@@ -21,6 +21,19 @@ const n22 = tgpu.fn(
   return std.fract(d.vec2f(a.x * a.y, a.y * a.z));
 });
 
+// Polynomial smooth minimum (Inigo Quilez) - like std.min, but rounds off
+// the joint between the two distance fields instead of meeting at a sharp
+// crease. Used to round the corners where several straight border segments
+// meet at a Voronoi vertex.
+const smoothMin = tgpu.fn(
+  [d.f32, d.f32, d.f32],
+  d.f32
+)((a, b, radius) => {
+  "use gpu";
+  const h = std.clamp(0.5 + (0.5 * (b - a)) / radius, 0, 1);
+  return std.mix(b, a, h) - radius * h * (1 - h);
+});
+
 // Cells drift on a torus that's a bit bigger than the visible viewport, so
 // a cell that exits one edge re-enters from the opposite one - a "conveyor
 // belt" instead of a sine-wave that has to reverse direction and pendulum
@@ -149,6 +162,11 @@ const VoronoiCanvas = ({
           // exact regardless of cell size, unlike a distance-ratio
           // approximation, which degenerates for tiny cells and can swallow
           // them whole in border color.
+          //
+          // A plain min() makes the border segments meet at sharp, angular
+          // creases wherever three or more cells join - smoothMin rounds
+          // those joints instead, like a metaball union.
+          const cornerRadius = 0.06;
           let edgeDist = d.f32(999999);
 
           for (let j = 0; j < CELL_COUNT; j++) {
@@ -161,7 +179,7 @@ const VoronoiCanvas = ({
                 std.dot(warpedP.sub(midpoint), direction)
               );
 
-              edgeDist = std.min(edgeDist, distToEdge);
+              edgeDist = smoothMin(edgeDist, distToEdge, cornerRadius);
             }
           }
 
