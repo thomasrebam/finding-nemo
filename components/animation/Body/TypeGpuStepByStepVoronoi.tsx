@@ -84,15 +84,15 @@ const VoronoiCanvas = ({
             .mul(warpAmplitude);
           const warpedP = p.add(warp);
 
-          // Distances to the three closest cell centers: the border between
+          // Distances to the two closest cell centers: the border between
           // two cells is where the closest and second-closest distances are
-          // (almost) equal, and a point where three cells meet is where the
-          // closest, second- and third-closest are all (almost) equal.
+          // (almost) equal.
           let minDist1 = d.f32(999999);
           let minDist2 = d.f32(999999);
-          let minDist3 = d.f32(999999);
+          let point1 = d.vec2f(0, 0);
+          let point2 = d.vec2f(0, 0);
           let col = d.vec3f(0, 0, 0);
-          const borderWidth = 0.02;
+          const borderWidth = 0.01;
 
           for (let i = 0; i < CELL_COUNT; i++) {
             const seeded = d.f32(i + seedOffset);
@@ -105,41 +105,37 @@ const VoronoiCanvas = ({
             const dist = std.length(point.sub(warpedP));
 
             if (dist < minDist1) {
-              minDist3 = minDist2;
               minDist2 = minDist1;
               minDist1 = dist;
+              point2 = d.vec2f(point1);
+              point1 = d.vec2f(point);
 
               col = d.vec3f(0.50390625, 0.859375, 0.87890625);
             } else if (dist < minDist2) {
-              minDist3 = minDist2;
               minDist2 = dist;
-            } else if (dist < minDist3) {
-              minDist3 = dist;
+              point2 = d.vec2f(point);
             }
           }
 
-          // Draw a black border wherever the two closest cells are near
-          // equidistant, anti-aliased over a small transition band instead
-          // of a hard on/off cutoff so it doesn't look jagged.
-          const edgeDist =
-            (minDist2 - minDist1) /
-            std.sqrt(std.pow(minDist2, 2) + std.pow(minDist1, 2));
-
-          // Widen the border near triple junctions: when the third-closest
-          // cell is nearly as close as the second-closest, all three cells
-          // are meeting right around here.
-          const vertexRange = 0.1;
-          const vertexBoost =
-            1 - std.smoothstep(0, vertexRange, minDist3 - minDist2);
-          const extraWidth = 0.03;
-          const localBorderWidth = borderWidth + extraWidth * vertexBoost;
+          // Draw a black border wherever the sample point is close to the
+          // bisector line between the two closest cells. Using the actual
+          // perpendicular distance to that line (rather than a ratio of
+          // minDist1/minDist2) keeps the border a constant width even for
+          // tiny cells - the ratio-based version degenerates when two seed
+          // points are close together, making the border swallow the whole
+          // cell and turning it solid white.
+          const edgeMidpoint = point1.add(point2).mul(0.5);
+          const edgeDirection = std.normalize(point2.sub(point1));
+          const edgeDist = std.abs(
+            std.dot(warpedP.sub(edgeMidpoint), edgeDirection)
+          );
 
           const aaWidth = 0.004;
           const borderMask =
             1 -
             std.smoothstep(
-              localBorderWidth - aaWidth,
-              localBorderWidth + aaWidth,
+              borderWidth - aaWidth,
+              borderWidth + aaWidth,
               edgeDist
             );
           col = std.mix(
