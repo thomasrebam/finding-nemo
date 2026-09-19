@@ -18,7 +18,11 @@ const Fishes = () => {
         fillOpacity={0.5}
       />
       <Nemo />
-      <TypeGpuStepByStepVoronoi CELL_COUNT={40} fillOpacity={0.5} />
+      <TypeGpuStepByStepVoronoi
+        CELL_COUNT={40}
+        fillOpacity={0.5}
+        borderColor={[0.9, 0.9, 0.9]}
+      />
     </View>
   );
 };
