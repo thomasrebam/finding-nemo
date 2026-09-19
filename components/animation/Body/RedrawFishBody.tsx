@@ -42,8 +42,9 @@ export const RedrawFishBody = () => {
   // SpineGradient shades each fragment by the palette stop nearest its
   // closest point on the spine polyline (updated live every frame), so
   // stripes follow the spine's actual curvature instead of a fixed axis.
-  const bodyGradient = useRef(
-    new SpineGradient(
+
+  const render: RenderCallback = useCallback((canvas) => {
+    const bodyGradient = new SpineGradient(
       [
         NemoColors.orange,
         NemoColors.black,
@@ -56,55 +57,49 @@ export const RedrawFishBody = () => {
         NemoColors.orange,
       ],
       [0, 0.08, 0.1, 0.22, 0.24, 0.5, 0.52, 0.56, 0.58]
-    )
-  ).current;
-  const bodyPaint = useRef(new Paint().addShader(bodyGradient)).current;
-  const eyePaint = useRef(new Paint().setColor("rgba(0, 0, 0, 0.5)")).current;
+    );
+    const eyePaint = new Paint().setColor("rgba(0, 0, 0, 0.5)");
+    const bodyPaint = new Paint().addShader(bodyGradient);
+    const spineNodes = spinePositionsRef.current;
+    if (spineNodes.length < 2) return;
 
-  const render: RenderCallback = useCallback(
-    (canvas) => {
-      const spineNodes = spinePositionsRef.current;
-      if (spineNodes.length < 2) return;
+    bodyGradient.setSpine(spineNodes);
 
-      bodyGradient.setSpine(spineNodes);
+    // Trailing blur: a Feather.sweep whose direction points back along the
+    // head's smoothed velocity, so the edge blurs where the fish is
+    // coming from and stays crisp where it's heading.
+    const head = spineNodes[0];
+    const prevHead = prevHeadRef.current;
+    if (prevHead) {
+      headVelocityRef.current = {
+        x:
+          headVelocityRef.current.x * MOTION_BLUR_VELOCITY_SMOOTHING +
+          (head.x - prevHead.x) * (1 - MOTION_BLUR_VELOCITY_SMOOTHING),
+        y:
+          headVelocityRef.current.y * MOTION_BLUR_VELOCITY_SMOOTHING +
+          (head.y - prevHead.y) * (1 - MOTION_BLUR_VELOCITY_SMOOTHING),
+      };
+    }
+    prevHeadRef.current = head;
 
-      // Trailing blur: a Feather.sweep whose direction points back along the
-      // head's smoothed velocity, so the edge blurs where the fish is
-      // coming from and stays crisp where it's heading.
-      const head = spineNodes[0];
-      const prevHead = prevHeadRef.current;
-      if (prevHead) {
-        headVelocityRef.current = {
-          x:
-            headVelocityRef.current.x * MOTION_BLUR_VELOCITY_SMOOTHING +
-            (head.x - prevHead.x) * (1 - MOTION_BLUR_VELOCITY_SMOOTHING),
-          y:
-            headVelocityRef.current.y * MOTION_BLUR_VELOCITY_SMOOTHING +
-            (head.y - prevHead.y) * (1 - MOTION_BLUR_VELOCITY_SMOOTHING),
-        };
-      }
-      prevHeadRef.current = head;
+    const { x: vx, y: vy } = headVelocityRef.current;
+    const speed = Math.hypot(vx, vy);
+    const sigma = Math.max(
+      Math.min(speed * MOTION_BLUR_SIGMA_PER_PX, MOTION_BLUR_MAX_SIGMA),
+      0.05
+    );
+    const trailDirection: [number, number] =
+      speed > 0.01 ? [-vx / speed, -vy / speed] : [1, 0];
+    bodyPaint.setFeather(Feather.sweep(sigma, trailDirection));
 
-      const { x: vx, y: vy } = headVelocityRef.current;
-      const speed = Math.hypot(vx, vy);
-      const sigma = Math.max(
-        Math.min(speed * MOTION_BLUR_SIGMA_PER_PX, MOTION_BLUR_MAX_SIGMA),
-        0.05
-      );
-      const trailDirection: [number, number] =
-        speed > 0.01 ? [-vx / speed, -vy / speed] : [1, 0];
-      bodyPaint.setFeather(Feather.sweep(sigma, trailDirection));
+    const fishPath = parseSVG(buildFishPathString(spineNodes));
+    canvas.drawPath(fishPath, bodyPaint);
 
-      const fishPath = parseSVG(buildFishPathString(spineNodes));
-      canvas.drawPath(fishPath, bodyPaint);
-
-      const { topEyeX, topEyeY, bottomEyeX, bottomEyeY } =
-        computeEyePositions(spineNodes);
-      canvas.draw(new Circle([topEyeX, topEyeY], 3), eyePaint);
-      canvas.draw(new Circle([bottomEyeX, bottomEyeY], 3), eyePaint);
-    },
-    [bodyGradient, bodyPaint, eyePaint]
-  );
+    const { topEyeX, topEyeY, bottomEyeX, bottomEyeY } =
+      computeEyePositions(spineNodes);
+    canvas.draw(new Circle([topEyeX, topEyeY], 3), eyePaint);
+    canvas.draw(new Circle([bottomEyeX, bottomEyeY], 3), eyePaint);
+  }, []);
 
   return (
     <View style={StyleSheet.absoluteFill}>
