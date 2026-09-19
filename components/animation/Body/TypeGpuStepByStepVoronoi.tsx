@@ -21,6 +21,37 @@ const n22 = tgpu.fn(
   return std.fract(d.vec2f(a.x * a.y, a.y * a.z));
 });
 
+// Cells drift on a torus that's a bit bigger than the visible viewport, so
+// a cell that exits one edge re-enters from the opposite one - a "conveyor
+// belt" instead of a sine-wave that has to reverse direction and pendulum
+// back and forth. Every cell shares the same speed (only its starting phase
+// differs, from the hash), so neighbors never move at different speeds
+// relative to each other - that's what kept the Voronoi borders glitching
+// before. Because the domain is padded past the viewport, the wrap-around
+// teleport always happens at the domain edge, which is off-screen.
+const DOMAIN_PADDING = 1;
+const DRIFT_SPEED_X = 1 / 40000;
+const DRIFT_SPEED_Y = 1 / 55000;
+
+const cellPoint = tgpu.fn(
+  [d.f32, d.f32, d.f32, d.f32],
+  d.vec2f
+)((index, seedOffset, time, aspectRatio) => {
+  "use gpu";
+  const n = n22(d.vec2f(index + seedOffset, index + seedOffset));
+
+  const wrappedX = std.fract(n.x + time * DRIFT_SPEED_X);
+  const wrappedY = std.fract(n.y + time * DRIFT_SPEED_Y);
+
+  const domainHalfWidth = (1 + DOMAIN_PADDING) * aspectRatio;
+  const domainHalfHeight = 1 + DOMAIN_PADDING;
+
+  return d.vec2f(
+    (wrappedX * 2 - 1) * domainHalfWidth,
+    (wrappedY * 2 - 1) * domainHalfHeight
+  );
+});
+
 type VoronoiProps = {
   CELL_COUNT: number;
   borderColor?: [number, number, number];
@@ -84,51 +115,55 @@ const VoronoiCanvas = ({
             .mul(warpAmplitude);
           const warpedP = p.add(warp);
 
-          // Distances to the two closest cell centers: the border between
-          // two cells is where the closest and second-closest distances are
-          // (almost) equal.
-          let minDist1 = d.f32(999999);
-          let minDist2 = d.f32(999999);
-          let point1 = d.vec2f(0, 0);
-          let point2 = d.vec2f(0, 0);
-          let col = d.vec3f(0, 0, 0);
           const borderWidth = 0.01;
 
+          // Pass 1: find the nearest cell center - this decides which cell
+          // the sample point belongs to.
+          let minDist1 = d.f32(999999);
+          let nearestIndex = 0;
+          let point1 = d.vec2f(0, 0);
+          let col = d.vec3f(0, 0, 0);
+
           for (let i = 0; i < CELL_COUNT; i++) {
-            const seeded = d.f32(i + seedOffset);
-            const n = n22(d.vec2f(seeded, seeded));
-            // Each cell drifts smoothly in [-1, 1] over time - n picks a
-            // different phase/frequency per cell so they don't move in sync.
-            let point = std.sin(n.mul(t / 2000 + 10));
-            point = d.vec2f(point.x * aspectRatio, point.y);
+            const point = cellPoint(d.f32(i), seedOffset, t, aspectRatio);
 
             const dist = std.length(point.sub(warpedP));
 
             if (dist < minDist1) {
-              minDist2 = minDist1;
               minDist1 = dist;
-              point2 = d.vec2f(point1);
+              nearestIndex = i;
               point1 = d.vec2f(point);
 
               col = d.vec3f(0.50390625, 0.859375, 0.87890625);
-            } else if (dist < minDist2) {
-              minDist2 = dist;
-              point2 = d.vec2f(point);
             }
           }
 
-          // Draw a black border wherever the sample point is close to the
-          // bisector line between the two closest cells. Using the actual
-          // perpendicular distance to that line (rather than a ratio of
-          // minDist1/minDist2) keeps the border a constant width even for
-          // tiny cells - the ratio-based version degenerates when two seed
-          // points are close together, making the border swallow the whole
-          // cell and turning it solid white.
-          const edgeMidpoint = point1.add(point2).mul(0.5);
-          const edgeDirection = std.normalize(point2.sub(point1));
-          const edgeDist = std.abs(
-            std.dot(warpedP.sub(edgeMidpoint), edgeDirection)
-          );
+          // Pass 2: the distance to the cell border is the minimum, over
+          // every other cell, of the perpendicular distance to the bisector
+          // line between it and the nearest cell. Taking a minimum of
+          // distances-to-a-line (rather than picking a single "2nd nearest"
+          // point by identity, like a naive implementation would) keeps this
+          // value continuous as cells move: which point happens to be
+          // runner-up can flip at any time, but the minimum itself never
+          // jumps, so edges don't glitch/snap when that happens. It's also
+          // exact regardless of cell size, unlike a distance-ratio
+          // approximation, which degenerates for tiny cells and can swallow
+          // them whole in border color.
+          let edgeDist = d.f32(999999);
+
+          for (let j = 0; j < CELL_COUNT; j++) {
+            if (j !== nearestIndex) {
+              const point = cellPoint(d.f32(j), seedOffset, t, aspectRatio);
+
+              const midpoint = point1.add(point).mul(0.5);
+              const direction = std.normalize(point.sub(point1));
+              const distToEdge = std.abs(
+                std.dot(warpedP.sub(midpoint), direction)
+              );
+
+              edgeDist = std.min(edgeDist, distToEdge);
+            }
+          }
 
           const aaWidth = 0.004;
           const borderMask =

@@ -12,13 +12,13 @@ const Fishes = () => {
   return (
     <View style={{ flex: 1 }}>
       <TypeGpuStepByStepVoronoi
-        CELL_COUNT={20}
+        CELL_COUNT={40}
         borderColor={[0.08, 0.3, 0.55]}
         seedOffset={100}
         fillOpacity={0.5}
       />
       <Nemo />
-      <TypeGpuStepByStepVoronoi CELL_COUNT={20} fillOpacity={0.5} />
+      <TypeGpuStepByStepVoronoi CELL_COUNT={40} fillOpacity={0.5} />
     </View>
   );
 };
